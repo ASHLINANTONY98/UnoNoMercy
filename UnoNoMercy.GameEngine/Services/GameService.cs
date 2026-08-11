@@ -1,4 +1,5 @@
-﻿using UnoNoMercy.GameEngine.Enums;
+﻿using System.Numerics;
+using UnoNoMercy.GameEngine.Enums;
 using UnoNoMercy.GameEngine.Models;
 
 namespace UnoNoMercy.GameEngine.Services
@@ -55,8 +56,13 @@ namespace UnoNoMercy.GameEngine.Services
 
             var topCard = GetTopCard(game);
 
-            if (!CanPlayCard(card, topCard))
+            if (!CanPlayCard(game, card, topCard))
                 return false;
+
+            if (card.Color != CardColor.Wild)
+            {
+                game.ActiveColor = null;
+            }
 
             player.Hand.Remove(card);
 
@@ -65,21 +71,35 @@ namespace UnoNoMercy.GameEngine.Services
             return true;
         }
 
-        public bool CanPlayCard(Card cardToPlay, Card topCard)
+        public bool CanPlayCard(
+            Game game,
+            Card cardToPlay,
+            Card topCard)
         {
-            if (cardToPlay.Color == topCard.Color)
+            if (cardToPlay.Type == CardType.Wild ||
+                cardToPlay.Type == CardType.WildDrawFour)
+            {
+                return true;
+            }
+
+
+            if (game.ActiveColor != null)
+            {
+                if (cardToPlay.Color ==
+                    game.ActiveColor)
+                    return true;
+            }
+
+            if (cardToPlay.Color ==
+                topCard.Color)
                 return true;
 
-            if (cardToPlay.Type == topCard.Type)
+            if (cardToPlay.Type ==
+                topCard.Type)
                 return true;
 
-            if (cardToPlay.Number == topCard.Number)
-                return true;
-
-            if (cardToPlay.Type == CardType.Wild)
-                return true;
-
-            if (cardToPlay.Type == topCard.Type)
+            if (cardToPlay.Number ==
+                topCard.Number)
                 return true;
 
             return false;
@@ -91,12 +111,16 @@ namespace UnoNoMercy.GameEngine.Services
         }
 
         public Card? GetFirstPlayableCard(
+            Game game,
             Player player,
             Card topCard)
         {
             return player.Hand
                 .FirstOrDefault(card =>
-                    CanPlayCard(card, topCard));
+                    CanPlayCard(
+                        game,
+                        card,
+                        topCard));
         }
 
         public bool TakeTurn(Game game)
@@ -106,7 +130,7 @@ namespace UnoNoMercy.GameEngine.Services
             var topCard = GetTopCard(game);
 
             var playableCard =
-                GetFirstPlayableCard(player, topCard);
+                GetFirstPlayableCard(game, player, topCard);
 
             if (playableCard != null)
             {
@@ -120,6 +144,7 @@ namespace UnoNoMercy.GameEngine.Services
 
                 ProcessSpecialCard(
                     game,
+                    player,
                     playableCard);
             }
             else
@@ -152,48 +177,101 @@ namespace UnoNoMercy.GameEngine.Services
 
         private void ProcessSpecialCard(
             Game game,
+            Player player,
             Card card)
         {
             switch (card.Type)
             {
                 case CardType.Skip:
+                    {
+                        NextTurn(game);
 
-                    NextTurn(game);
+                        Console.WriteLine(
+                            "⏭ Skip card activated!");
 
-                    Console.WriteLine(
-                        "⏭ Skip card activated!");
-
-                    break;
+                        break;
+                    }
 
                 case CardType.Reverse:
+                    {
+                        game.Direction *= -1;
 
-                    game.Direction *= -1;
+                        Console.WriteLine(
+                            "🔄 Reverse activated!");
 
-                    Console.WriteLine(
-                        "🔄 Reverse activated!");
-
-                    break;
+                        break;
+                    }
 
                 case CardType.DrawTwo:
+                    {
+                        NextTurn(game);
 
-                    NextTurn(game);
+                        var targetPlayer =
+                            GetCurrentPlayer(game);
 
-                    var targetPlayer =
-                        GetCurrentPlayer(game);
+                        targetPlayer.Hand.Add(
+                            DrawCard(game));
 
-                    targetPlayer.Hand.Add(
-                        DrawCard(game));
+                        targetPlayer.Hand.Add(
+                            DrawCard(game));
 
-                    targetPlayer.Hand.Add(
-                        DrawCard(game));
+                        Console.WriteLine(
+                            $"➕2 {targetPlayer.Name} draws 2 cards!");
 
-                    Console.WriteLine(
-                        $"➕2 {targetPlayer.Name} draws 2 cards!");
+                        NextTurn(game);
 
-                    NextTurn(game);
+                        break;
+                    }
 
-                    break;
+                case CardType.Wild:
+                    {
+
+                        game.ActiveColor = GetBestColor(player);
+
+                        Console.WriteLine(
+                            $"🌈 Wild! Color changed to {game.ActiveColor}");
+
+                        break;
+                    }
+
+                case CardType.WildDrawFour:
+                    {
+                        game.ActiveColor =
+                            GetBestColor(player);
+
+                        Console.WriteLine(
+                            $"🌈 Wild Draw Four! Color changed to {game.ActiveColor}");
+
+                        NextTurn(game);
+
+                        var targetPlayer =
+                            GetCurrentPlayer(game);
+
+                        for (int i = 0; i < 4; i++)
+                        {
+                            targetPlayer.Hand.Add(
+                                DrawCard(game));
+                        }
+
+                        Console.WriteLine(
+                            $"➕4 {targetPlayer.Name} draws 4 cards!");
+
+                        NextTurn(game);
+
+                        break;
+                    }
             }
+        }
+
+        private CardColor GetBestColor(Player player)
+        {
+            var colors = player.Hand
+                .Where(c => c.Color != CardColor.Wild)
+                .GroupBy(c => c.Color)
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault();
+
+            return colors?.Key ?? CardColor.Red;
         }
     }
 }

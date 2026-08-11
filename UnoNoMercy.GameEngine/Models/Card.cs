@@ -9,12 +9,16 @@ namespace UnoNoMercy.GameEngine.Models
         public int? Number { get; set; }
         public override string ToString()
         {
-
             if (Type == CardType.Number)
                 return $"{Color} {Number}";
+ 
+            if (Type == CardType.WildDrawFour)
+                return "Wild Draw Four";
+
+            if (Type == CardType.Wild)
+                return "Wild";
 
             return $"{Color} {Type}";
-
         }
     }
 }

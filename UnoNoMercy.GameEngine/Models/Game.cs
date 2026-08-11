@@ -1,4 +1,6 @@
-﻿namespace UnoNoMercy.GameEngine.Models
+﻿using UnoNoMercy.GameEngine.Enums;
+
+namespace UnoNoMercy.GameEngine.Models
 {
     public class Game
     {
@@ -11,5 +13,7 @@
         public int CurrentPlayerIndex { get; set; } = 0;
 
         public int Direction { get; set; } = 1;
+
+        public CardColor? ActiveColor { get; set; }
     }
 }

@@ -28,6 +28,44 @@ namespace UnoNoMercy.GameEngine.Services
                         Number = i
                     });
                 }
+
+                // Skip Cards
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.Skip
+                });
+
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.Skip
+                });
+
+                // Reverse Cards
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.Reverse
+                });
+
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.Reverse
+                });
+
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.DrawTwo
+                });
+
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.DrawTwo
+                });
             }
 
             return deck;
@@ -48,6 +86,8 @@ namespace UnoNoMercy.GameEngine.Services
                 (deck[n], deck[k]) =
                 (deck[k], deck[n]);
             }
+
+
         }
     }
 }

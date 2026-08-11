@@ -9,5 +9,7 @@
         public List<Card> DiscardPile { get; set; } = new();
 
         public int CurrentPlayerIndex { get; set; } = 0;
+
+        public int Direction { get; set; } = 1;
     }
 }

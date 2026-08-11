@@ -31,11 +31,17 @@ namespace UnoNoMercy.GameEngine.Services
 
         public void NextTurn(Game game)
         {
-            game.CurrentPlayerIndex++;
+            game.CurrentPlayerIndex += game.Direction;
 
             if (game.CurrentPlayerIndex >= game.Players.Count)
             {
                 game.CurrentPlayerIndex = 0;
+            }
+
+            if (game.CurrentPlayerIndex < 0)
+            {
+                game.CurrentPlayerIndex =
+                    game.Players.Count - 1;
             }
         }
 
@@ -64,10 +70,16 @@ namespace UnoNoMercy.GameEngine.Services
             if (cardToPlay.Color == topCard.Color)
                 return true;
 
+            if (cardToPlay.Type == topCard.Type)
+                return true;
+
             if (cardToPlay.Number == topCard.Number)
                 return true;
 
             if (cardToPlay.Type == CardType.Wild)
+                return true;
+
+            if (cardToPlay.Type == topCard.Type)
                 return true;
 
             return false;
@@ -105,6 +117,10 @@ namespace UnoNoMercy.GameEngine.Services
 
                 Console.WriteLine(
                     $"{player.Name} played {playableCard}");
+
+                ProcessSpecialCard(
+                    game,
+                    playableCard);
             }
             else
             {
@@ -132,6 +148,52 @@ namespace UnoNoMercy.GameEngine.Services
         public bool HasWon(Player player)
         {
             return player.Hand.Count == 0;
+        }
+
+        private void ProcessSpecialCard(
+            Game game,
+            Card card)
+        {
+            switch (card.Type)
+            {
+                case CardType.Skip:
+
+                    NextTurn(game);
+
+                    Console.WriteLine(
+                        "⏭ Skip card activated!");
+
+                    break;
+
+                case CardType.Reverse:
+
+                    game.Direction *= -1;
+
+                    Console.WriteLine(
+                        "🔄 Reverse activated!");
+
+                    break;
+
+                case CardType.DrawTwo:
+
+                    NextTurn(game);
+
+                    var targetPlayer =
+                        GetCurrentPlayer(game);
+
+                    targetPlayer.Hand.Add(
+                        DrawCard(game));
+
+                    targetPlayer.Hand.Add(
+                        DrawCard(game));
+
+                    Console.WriteLine(
+                        $"➕2 {targetPlayer.Name} draws 2 cards!");
+
+                    NextTurn(game);
+
+                    break;
+            }
         }
     }
 }

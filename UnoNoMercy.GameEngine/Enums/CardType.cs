@@ -7,6 +7,7 @@
         Reverse,
         DrawTwo,
         Wild,
-        WildDrawFour
+        WildDrawFour,
+        DrawTen
     }
 }

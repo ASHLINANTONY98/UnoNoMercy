@@ -66,6 +66,12 @@ namespace UnoNoMercy.GameEngine.Services
                     Color = color,
                     Type = CardType.DrawTwo
                 });
+
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = CardType.DrawTen
+                });
             }
 
             for (int i = 0; i < 4; i++)

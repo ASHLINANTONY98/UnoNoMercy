@@ -59,7 +59,8 @@ namespace UnoNoMercy.GameEngine.Services
             if (!CanPlayCard(game, card, topCard))
                 return false;
 
-            if (card.Color != CardColor.Wild)
+            if (card.Type != CardType.Wild &&
+                card.Type != CardType.WildDrawFour)
             {
                 game.ActiveColor = null;
             }
@@ -127,10 +128,57 @@ namespace UnoNoMercy.GameEngine.Services
         {
             var player = GetCurrentPlayer(game);
 
+            // NO MERCY STACKING CHECK
+            if (game.PendingDrawCount > 0)
+            {
+                var stackCard = player.Hand
+                    .FirstOrDefault(c =>
+                        c.Type == CardType.DrawTwo ||
+                        c.Type == CardType.WildDrawFour);
+
+                if (stackCard != null)
+                {
+                    PlayCard(
+                        game,
+                        player,
+                        stackCard);
+
+                    Console.WriteLine(
+                        $"{player.Name} stacked {stackCard}");
+
+                    ProcessSpecialCard(
+                        game,
+                        player,
+                        stackCard);
+
+                    NextTurn(game);
+
+                    return true;
+                }
+
+                for (int i = 0; i < game.PendingDrawCount; i++)
+                {
+                    player.Hand.Add(
+                        DrawCard(game));
+                }
+
+                Console.WriteLine(
+                    $"💀 {player.Name} draws {game.PendingDrawCount} cards!");
+
+                game.PendingDrawCount = 0;
+
+                NextTurn(game);
+
+                return true;
+            }
+
             var topCard = GetTopCard(game);
 
             var playableCard =
-                GetFirstPlayableCard(game, player, topCard);
+                GetFirstPlayableCard(
+                    game,
+                    player,
+                    topCard);
 
             if (playableCard != null)
             {
@@ -180,6 +228,20 @@ namespace UnoNoMercy.GameEngine.Services
             Player player,
             Card card)
         {
+            if (card.Type == CardType.Number)
+            {
+                if (card.Number == 7)
+                {
+                    Console.WriteLine(
+                        "🔄 7-Swap activated!");
+                }
+
+                if (card.Number == 0)
+                {
+                    Console.WriteLine(
+                        "♻ 0-Rotate activated!");
+                }
+            }
             switch (card.Type)
             {
                 case CardType.Skip:
@@ -204,21 +266,10 @@ namespace UnoNoMercy.GameEngine.Services
 
                 case CardType.DrawTwo:
                     {
-                        NextTurn(game);
-
-                        var targetPlayer =
-                            GetCurrentPlayer(game);
-
-                        targetPlayer.Hand.Add(
-                            DrawCard(game));
-
-                        targetPlayer.Hand.Add(
-                            DrawCard(game));
+                        game.PendingDrawCount += 2;
 
                         Console.WriteLine(
-                            $"➕2 {targetPlayer.Name} draws 2 cards!");
-
-                        NextTurn(game);
+                            $"🔥 Draw penalty = {game.PendingDrawCount}");
 
                         break;
                     }
@@ -239,24 +290,23 @@ namespace UnoNoMercy.GameEngine.Services
                         game.ActiveColor =
                             GetBestColor(player);
 
+                        game.PendingDrawCount += 4;
+
+                        Console.WriteLine(
+                            $"🔥 Draw penalty = {game.PendingDrawCount}");
+
                         Console.WriteLine(
                             $"🌈 Wild Draw Four! Color changed to {game.ActiveColor}");
 
-                        NextTurn(game);
+                        break;
+                    }
 
-                        var targetPlayer =
-                            GetCurrentPlayer(game);
-
-                        for (int i = 0; i < 4; i++)
-                        {
-                            targetPlayer.Hand.Add(
-                                DrawCard(game));
-                        }
+                case CardType.DrawTen:
+                    {
+                        game.PendingDrawCount += 10;
 
                         Console.WriteLine(
-                            $"➕4 {targetPlayer.Name} draws 4 cards!");
-
-                        NextTurn(game);
+                            $"💀 Draw penalty = {game.PendingDrawCount}");
 
                         break;
                     }
@@ -272,6 +322,14 @@ namespace UnoNoMercy.GameEngine.Services
                 .FirstOrDefault();
 
             return colors?.Key ?? CardColor.Red;
+        }
+
+        private bool CanStackDrawCard(
+            Player player)
+        {
+            return player.Hand.Any(c =>
+                c.Type == CardType.DrawTwo ||
+                c.Type == CardType.WildDrawFour);
         }
     }
 }

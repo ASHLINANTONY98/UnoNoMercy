@@ -15,5 +15,7 @@ namespace UnoNoMercy.GameEngine.Models
         public int Direction { get; set; } = 1;
 
         public CardColor? ActiveColor { get; set; }
+
+        public int PendingDrawCount { get; set; } = 0;
     }
 }

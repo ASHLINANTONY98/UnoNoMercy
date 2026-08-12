@@ -17,5 +17,7 @@ namespace UnoNoMercy.GameEngine.Models
         public CardColor? ActiveColor { get; set; }
 
         public int PendingDrawCount { get; set; } = 0;
+
+        public int CurrentStackValue { get; set; } = 0;
     }
 }

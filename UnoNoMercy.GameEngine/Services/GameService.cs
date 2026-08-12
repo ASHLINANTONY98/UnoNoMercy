@@ -97,8 +97,7 @@ namespace UnoNoMercy.GameEngine.Services
             if (!CanPlayCard(game, card, topCard))
                 return false;
 
-            if (card.Type != CardType.Wild &&
-                card.Type != CardType.WildDrawFour)
+            if (!IsWildCard(card))
             {
                 game.ActiveColor = null;
             }
@@ -109,6 +108,13 @@ namespace UnoNoMercy.GameEngine.Services
 
             return true;
         }
+
+        private bool IsWildCard(Card card)
+        {
+            return card.Type == CardType.Wild ||
+                   card.Type == CardType.WildDrawFour;
+        }
+
 
         public bool CanPlayCard(
             Game game,
@@ -181,9 +187,11 @@ namespace UnoNoMercy.GameEngine.Services
             if (game.PendingDrawCount > 0)
             {
                 var stackCard = player.Hand
+                    .Where(c => GetDrawValue(c) > 0)
+                    .OrderBy(c => GetDrawValue(c))
                     .FirstOrDefault(c =>
-                        c.Type == CardType.DrawTwo ||
-                        c.Type == CardType.WildDrawFour);
+                        GetDrawValue(c) >=
+                        game.CurrentStackValue);
 
                 if (stackCard != null)
                 {
@@ -217,6 +225,7 @@ namespace UnoNoMercy.GameEngine.Services
                 {
                     
                     game.PendingDrawCount = 0;
+                    game.CurrentStackValue = 0;
 
                     NextTurn(game);
 
@@ -227,6 +236,7 @@ namespace UnoNoMercy.GameEngine.Services
                     $"💀 {player.Name} draws {game.PendingDrawCount} cards!");
 
                 game.PendingDrawCount = 0;
+                game.CurrentStackValue = 0;
 
                 NextTurn(game);
 
@@ -344,6 +354,7 @@ namespace UnoNoMercy.GameEngine.Services
                 case CardType.DrawTwo:
                     {
                         game.PendingDrawCount += 2;
+                        game.CurrentStackValue = 2;
 
                         Console.WriteLine(
                             $"🔥 Draw penalty = {game.PendingDrawCount}");
@@ -368,6 +379,7 @@ namespace UnoNoMercy.GameEngine.Services
                             GetBestColor(player);
 
                         game.PendingDrawCount += 4;
+                        game.CurrentStackValue = 4;
 
                         Console.WriteLine(
                             $"🔥 Draw penalty = {game.PendingDrawCount}");
@@ -381,6 +393,7 @@ namespace UnoNoMercy.GameEngine.Services
                 case CardType.DrawTen:
                     {
                         game.PendingDrawCount += 10;
+                        game.CurrentStackValue = 10;
 
                         Console.WriteLine(
                             $"💀 Draw penalty = {game.PendingDrawCount}");
@@ -399,14 +412,6 @@ namespace UnoNoMercy.GameEngine.Services
                 .FirstOrDefault();
 
             return colors?.Key ?? CardColor.Red;
-        }
-
-        private bool CanStackDrawCard(
-            Player player)
-        {
-            return player.Hand.Any(c =>
-                c.Type == CardType.DrawTwo ||
-                c.Type == CardType.WildDrawFour);
         }
 
         private Player GetPlayerWithMostCards(Game game)
@@ -447,6 +452,18 @@ namespace UnoNoMercy.GameEngine.Services
         {
             return game.Players
                 .Count(p => !p.IsEliminated) == 1;
+        }
+
+        private int GetDrawValue(Card card)
+        {
+            return card.Type switch
+            {
+                CardType.DrawTwo => 2,
+                CardType.WildDrawFour => 4,
+                //CardType.WildDrawSix => 6,
+                CardType.DrawTen => 10,
+                _ => 0
+            };
         }
     }
 }

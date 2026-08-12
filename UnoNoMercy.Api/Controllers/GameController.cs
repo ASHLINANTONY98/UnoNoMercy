@@ -11,20 +11,23 @@ namespace UnoNoMercy.Api.Controllers;
 public class GameController : ControllerBase
 {
     private readonly GameManager _gameManager;
+    private readonly GameService _gameService;
+    private readonly DeckService _deckService;
 
-    public GameController(GameManager gameManager)
+    public GameController(GameManager gameManager, GameService gameService, DeckService deckService)
     {
         _gameManager = gameManager;
+        _gameService = gameService;
+        _deckService = deckService;
+
     }
 
     [HttpPost("create")]
     public IActionResult CreateGame()
     {
-        var deckService = new DeckService();
+        var deck = _deckService.CreateDeck();
 
-        var deck = deckService.CreateDeck();
-
-        deckService.Shuffle(deck);
+        _deckService.Shuffle(deck);
 
         var game = new Game
         {
@@ -38,15 +41,14 @@ public class GameController : ControllerBase
         }
         };
 
-        var gameService = new GameService();
 
-        gameService.DealCards(game);
+        _gameService.DealCards(game);
 
         Card startingCard;
 
         while (true)
         {
-            startingCard = gameService.DrawCard(game);
+            startingCard = _gameService.DrawCard(game);
 
             if (startingCard.Type == CardType.Number)
             {
@@ -56,13 +58,13 @@ public class GameController : ControllerBase
 
             game.Deck.Add(startingCard);
 
-            deckService.Shuffle(game.Deck);
+            _deckService.Shuffle(game.Deck);
         }
 
         _gameManager.CurrentGame = game;
 
         return Ok(
-            gameService.GetGameState(game));
+            _gameService.GetGameState(game));
     }
 
     [HttpGet("state")]
@@ -77,7 +79,7 @@ public class GameController : ControllerBase
         var gameService = new GameService();
 
         return Ok(
-            gameService.GetGameState(
+            _gameService.GetGameState(
                 _gameManager.CurrentGame));
     }
 
@@ -90,14 +92,12 @@ public class GameController : ControllerBase
                 "No active game found.");
         }
 
-        var gameService = new GameService();
-
         var continueGame =
-            gameService.TakeTurn(
+            _gameService.TakeTurn(
                 _gameManager.CurrentGame);
 
         return Ok(
-            gameService.GetGameState(
+            _gameService.GetGameState(
                 _gameManager.CurrentGame));
     }
 

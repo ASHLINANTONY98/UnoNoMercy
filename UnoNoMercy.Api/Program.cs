@@ -1,4 +1,5 @@
 using UnoNoMercy.Api.Services;
+using UnoNoMercy.GameEngine.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<GameManager>();
+builder.Services.AddSingleton<GameService>();
+builder.Services.AddSingleton<DeckService>();
 
 var app = builder.Build();
 

@@ -29,5 +29,7 @@ namespace UnoNoMercy.GameEngine.Models
         public string? WinnerName { get; set; }
 
         public bool IsGameOver { get; set; }
+
+        public bool HasDrawnThisTurn { get; set; }
     }
 }

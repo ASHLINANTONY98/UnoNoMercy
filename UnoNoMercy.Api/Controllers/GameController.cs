@@ -182,6 +182,51 @@ public class GameController : ControllerBase
 
         return Ok(result);
     }
+    [HttpPost("draw-card")]
+    public IActionResult DrawCard(
+        DrawCardRequest request)
+    {
+        if (!_gameManager.Games.TryGetValue(
+            request.GameId,
+            out var game))
+        {
+            return NotFound(
+                "Game not found.");
+        }
 
+        var result =
+            _gameService.DrawPlayerCard(
+                game,
+                request.PlayerName);
+
+        return Ok(result);
+    }
+
+    [HttpPost("pass-turn")]
+    public IActionResult PassTurn(
+        PassTurnRequest request)
+    {
+        if (!_gameManager.Games.TryGetValue(
+            request.GameId,
+            out var game))
+        {
+            return NotFound(
+                "Game not found.");
+        }
+
+        var result =
+            _gameService.PassTurn(
+                game,
+                request.PlayerName);
+
+        if (!result)
+        {
+            return BadRequest(
+                "Unable to pass turn.");
+        }
+
+        return Ok(
+            _gameService.GetGameState(game));
+    }
 
 }

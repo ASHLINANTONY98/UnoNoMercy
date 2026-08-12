@@ -681,6 +681,8 @@ namespace UnoNoMercy.GameEngine.Services
 
             PlayCard(game, player, card);
 
+            game.HasDrawnThisTurn = false;
+
             bool playedLastCard =
                 player.Hand.Count == 0;
 
@@ -712,6 +714,16 @@ namespace UnoNoMercy.GameEngine.Services
             Game game,
             string playerName)
         {
+
+            if (game.HasDrawnThisTurn)
+            {
+                return new DrawCardResponse
+                {
+                    Success = false,
+                    Message = "You already drew a card."
+                };
+            }
+            
             if (game.IsGameOver)
             {
                 return new DrawCardResponse
@@ -738,9 +750,11 @@ namespace UnoNoMercy.GameEngine.Services
 
             player.Hand.Add(drawnCard);
 
+            game.HasDrawnThisTurn = true;
+
             CheckMercyRule(game, player);
 
-            NextTurn(game);
+            //NextTurn(game);
 
             return new DrawCardResponse
             {
@@ -748,6 +762,25 @@ namespace UnoNoMercy.GameEngine.Services
                 Message = "Card drawn successfully.",
                 DrawnCard = drawnCard.ToString()
             };
+        }
+
+        public bool PassTurn(
+            Game game,
+            string playerName)
+        {
+            var player = GetCurrentPlayer(game);
+
+            if (player.Name != playerName)
+                return false;
+
+            if (!game.HasDrawnThisTurn)
+                return false;
+
+            game.HasDrawnThisTurn = false;
+
+            NextTurn(game);
+
+            return true;
         }
 
     }

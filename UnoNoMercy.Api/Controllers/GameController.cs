@@ -17,12 +17,6 @@ public class GameController : ControllerBase
         _gameManager = gameManager;
     }
 
-    [HttpGet]
-    public IActionResult Get()
-    {
-        return Ok("UNO No Mercy API Working");
-    }
-
     [HttpPost("create")]
     public IActionResult CreateGame()
     {
@@ -81,6 +75,26 @@ public class GameController : ControllerBase
         }
 
         var gameService = new GameService();
+
+        return Ok(
+            gameService.GetGameState(
+                _gameManager.CurrentGame));
+    }
+
+    [HttpPost("next-turn")]
+    public IActionResult NextTurn()
+    {
+        if (_gameManager.CurrentGame == null)
+        {
+            return NotFound(
+                "No active game found.");
+        }
+
+        var gameService = new GameService();
+
+        var continueGame =
+            gameService.TakeTurn(
+                _gameManager.CurrentGame);
 
         return Ok(
             gameService.GetGameState(

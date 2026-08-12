@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UnoNoMercy.Api.Models;
 using UnoNoMercy.Api.Services;
+using UnoNoMercy.GameEngine.DTOs;
 using UnoNoMercy.GameEngine.Enums;
 using UnoNoMercy.GameEngine.Models;
 using UnoNoMercy.GameEngine.Services;
@@ -108,11 +109,40 @@ public class GameController : ControllerBase
             return NotFound("Game not found.");
         }
 
+        if (game.IsGameOver)
+        {
+            return BadRequest(
+                "Game is already finished.");
+        }
+
         _gameService.TakeTurn(game);
 
         return Ok(
             _gameService.GetGameState(game));
     }
+
+    [HttpGet("result/{gameId}")]
+    public IActionResult GetResult(Guid gameId)
+    {
+        if (!_gameManager.Games.TryGetValue(
+            gameId,
+            out var game))
+        {
+            return NotFound(
+                "Game not found.");
+        }
+
+        return Ok(
+            new GameResultDto
+            {
+                IsGameOver = game.IsGameOver,
+                WinnerName = game.WinnerName,
+                TotalTurns = game.TotalTurns,
+                LargestStack = game.LargestStack,
+                Eliminations = game.Eliminations
+            });
+    }
+
 
 
 }

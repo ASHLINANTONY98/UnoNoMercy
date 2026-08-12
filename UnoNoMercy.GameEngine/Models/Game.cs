@@ -25,5 +25,9 @@ namespace UnoNoMercy.GameEngine.Models
         public int LargestStack { get; set; }
 
         public int Eliminations { get; set; }
+
+        public string? WinnerName { get; set; }
+
+        public bool IsGameOver { get; set; }
     }
 }

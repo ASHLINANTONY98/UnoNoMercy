@@ -175,6 +175,9 @@ namespace UnoNoMercy.GameEngine.Services
                 var winner = game.Players
                     .First(p => !p.IsEliminated);
 
+                game.WinnerName = winner.Name;
+                game.IsGameOver = true;
+
                 Console.WriteLine(
                     $"👑 {winner.Name} is the last player standing!");
 
@@ -298,6 +301,10 @@ namespace UnoNoMercy.GameEngine.Services
 
             if (HasWon(player) && game.PendingDrawCount == 0)
             {
+
+                game.WinnerName = player.Name;
+                game.IsGameOver = true;
+
                 Console.WriteLine(
                     $"🏆 {player.Name} WINS!");
 

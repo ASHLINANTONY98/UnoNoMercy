@@ -169,34 +169,14 @@ namespace UnoNoMercy.GameEngine.Services
 
         public bool TakeTurn(Game game)
         {
-
             if (IsLastPlayerStanding(game))
             {
                 var winner = game.Players
                     .First(p => !p.IsEliminated);
 
-                game.WinnerName = winner.Name;
-                game.IsGameOver = true;
-
-                Console.WriteLine(
-                    $"👑 {winner.Name} is the last player standing!");
-
-                Console.WriteLine();
-                Console.WriteLine("========== GAME STATS ==========");
-
-                Console.WriteLine(
-                    $"Turns Played: {game.TotalTurns}");
-
-                Console.WriteLine(
-                    $"Largest Stack: {game.LargestStack}");
-
-                Console.WriteLine(
-                    $"Players Eliminated: {game.Eliminations}");
-
-                Console.WriteLine(
-                    "===============================");
-
-                return false;
+                return EndGame(
+                    game,
+                    winner.Name);
             }
 
             game.TotalTurns++;
@@ -221,6 +201,9 @@ namespace UnoNoMercy.GameEngine.Services
                         player,
                         stackCard);
 
+                    bool playedLastCard =
+                        player.Hand.Count == 0;
+
                     Console.WriteLine(
                         $"{player.Name} stacked {stackCard}");
 
@@ -228,6 +211,13 @@ namespace UnoNoMercy.GameEngine.Services
                         game,
                         player,
                         stackCard);
+
+                    if (playedLastCard && game.PendingDrawCount == 0)
+                    {
+                        return EndGame(
+                            game,
+                            player.Name);
+                    }
 
                     NextTurn(game);
 
@@ -279,6 +269,9 @@ namespace UnoNoMercy.GameEngine.Services
                     player,
                     playableCard);
 
+                bool playedLastCard =
+                    player.Hand.Count == 0;
+
                 Console.WriteLine(
                     $"{player.Name} played {playableCard}");
 
@@ -286,6 +279,13 @@ namespace UnoNoMercy.GameEngine.Services
                     game,
                     player,
                     playableCard);
+
+                if (playedLastCard && game.PendingDrawCount == 0)
+                {
+                    return EndGame(
+                        game,
+                        player.Name);
+                }
             }
             else
             {
@@ -299,42 +299,38 @@ namespace UnoNoMercy.GameEngine.Services
                     $"{player.Name} drew {drawnCard}");
             }
 
-            if (HasWon(player) && game.PendingDrawCount == 0)
-            {
-
-                game.WinnerName = player.Name;
-                game.IsGameOver = true;
-
-                Console.WriteLine(
-                    $"🏆 {player.Name} WINS!");
-
-                Console.WriteLine();
-                Console.WriteLine("========== GAME STATS ==========");
-
-                Console.WriteLine(
-                    $"Turns Played: {game.TotalTurns}");
-
-                Console.WriteLine(
-                    $"Largest Stack: {game.LargestStack}");
-
-                Console.WriteLine(
-                    $"Players Eliminated: {game.Eliminations}");
-
-                Console.WriteLine(
-                    "===============================");
-
-                return false;
-            }
-
 
             NextTurn(game);
 
             return true;
         }
 
-        public bool HasWon(Player player)
+        private bool EndGame(
+            Game game,
+            string winnerName)
         {
-            return player.Hand.Count == 0;
+            game.WinnerName = winnerName;
+            game.IsGameOver = true;
+
+            Console.WriteLine(
+                $"🏆 {winnerName} WINS!");
+
+            Console.WriteLine();
+            Console.WriteLine("========== GAME STATS ==========");
+
+            Console.WriteLine(
+                $"Turns Played: {game.TotalTurns}");
+
+            Console.WriteLine(
+                $"Largest Stack: {game.LargestStack}");
+
+            Console.WriteLine(
+                $"Players Eliminated: {game.Eliminations}");
+
+            Console.WriteLine(
+                "===============================");
+
+            return false;
         }
 
         private void ProcessSpecialCard(
@@ -522,22 +518,30 @@ namespace UnoNoMercy.GameEngine.Services
         private Player GetPlayerWithMostCards(Game game)
         {
             return game.Players
+                .Where(p => !p.IsEliminated)
                 .OrderByDescending(p => p.Hand.Count)
                 .First();
         }
 
         private void RotateHands(Game game)
         {
-            var lastHand =
-                game.Players.Last().Hand;
+            var activePlayers = game.Players
+                .Where(p => !p.IsEliminated)
+                .ToList();
 
-            for (int i = game.Players.Count - 1; i > 0; i--)
+            if (activePlayers.Count <= 1)
+                return;
+
+            var lastHand =
+                activePlayers.Last().Hand;
+
+            for (int i = activePlayers.Count - 1; i > 0; i--)
             {
-                game.Players[i].Hand =
-                    game.Players[i - 1].Hand;
+                activePlayers[i].Hand =
+                    activePlayers[i - 1].Hand;
             }
 
-            game.Players[0].Hand = lastHand;
+            activePlayers[0].Hand = lastHand;
         }
 
         private void CheckMercyRule(Game game, Player player)

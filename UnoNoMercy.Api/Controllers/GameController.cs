@@ -162,5 +162,26 @@ public class GameController : ControllerBase
                 playerName));
     }
 
+    [HttpPost("play-card")]
+    public IActionResult PlayCard(
+    PlayCardRequest request)
+    {
+        if (!_gameManager.Games.TryGetValue(
+            request.GameId,
+            out var game))
+        {
+            return NotFound(
+                "Game not found.");
+        }
+
+        var result =
+            _gameService.PlayPlayerCard(
+                game,
+                request.PlayerName,
+                request.CardId);
+
+        return Ok(result);
+    }
+
 
 }

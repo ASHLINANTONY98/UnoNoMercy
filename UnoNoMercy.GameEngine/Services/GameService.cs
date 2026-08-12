@@ -139,8 +139,11 @@ namespace UnoNoMercy.GameEngine.Services
                 return true;
 
             if (cardToPlay.Type ==
-                topCard.Type)
+                topCard.Type &&
+                cardToPlay.Type != CardType.Number)
+            {
                 return true;
+            }
 
             if (cardToPlay.Number ==
                 topCard.Number)
@@ -631,6 +634,15 @@ namespace UnoNoMercy.GameEngine.Services
             string playerName,
             string cardId)
         {
+
+            if (game.IsGameOver)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Game already finished."
+                };
+            }
             var player = GetCurrentPlayer(game);
 
             if (player.Name != playerName)
@@ -665,7 +677,29 @@ namespace UnoNoMercy.GameEngine.Services
                 };
             }
 
+            game.TotalTurns++;
+
             PlayCard(game, player, card);
+
+            bool playedLastCard =
+                player.Hand.Count == 0;
+
+            ProcessSpecialCard(
+                game,
+                player,
+                card);
+
+            if (playedLastCard &&
+                game.PendingDrawCount == 0)
+            {
+                EndGame(
+                    game,
+                    player.Name);
+            }
+            else
+            {
+                NextTurn(game);
+            }
 
             return new PlayCardResponse
             {
@@ -673,5 +707,6 @@ namespace UnoNoMercy.GameEngine.Services
                 Message = "Card played successfully."
             };
         }
+
     }
 }

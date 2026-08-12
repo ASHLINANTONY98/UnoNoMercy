@@ -48,6 +48,19 @@ Console.WriteLine();
 Console.WriteLine("=== GAME STARTED ===");
 Console.WriteLine();
 
+var state = gameService.GetGameState(game);
+
+Console.WriteLine(
+    $"Current Player: {state.CurrentPlayer}");
+
+Console.WriteLine(
+    $"Top Card: {state.TopCard}");
+
+Console.WriteLine(
+    $"Pending Draw: {state.PendingDrawCount}");
+
+Console.WriteLine();
+
 while (true)
 {
     bool continueGame =

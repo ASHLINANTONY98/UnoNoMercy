@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using UnoNoMercy.GameEngine.DTOs;
 using UnoNoMercy.GameEngine.Enums;
 using UnoNoMercy.GameEngine.Models;
 
@@ -564,6 +565,33 @@ namespace UnoNoMercy.GameEngine.Services
                 CardType.WildDrawSix => 6,
                 CardType.DrawTen => 10,
                 _ => 0
+            };
+        }
+
+        public GameStateDto GetGameState(Game game)
+        {
+            return new GameStateDto
+            {
+                CurrentPlayer =
+                    GetCurrentPlayer(game).Name,
+
+                TopCard =
+                    GetTopCard(game).ToString(),
+
+                PendingDrawCount =
+                    game.PendingDrawCount,
+
+                Direction =
+                    game.Direction,
+
+                Players = game.Players
+                    .Select(p => new PlayerStateDto
+                    {
+                        Name = p.Name,
+                        CardCount = p.Hand.Count,
+                        IsEliminated = p.IsEliminated
+                    })
+                    .ToList()
             };
         }
     }

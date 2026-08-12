@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UnoNoMercy.Api.Models;
 using UnoNoMercy.Api.Services;
 using UnoNoMercy.GameEngine.Enums;
 using UnoNoMercy.GameEngine.Models;
@@ -23,23 +24,32 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("create")]
-    public IActionResult CreateGame()
+    public IActionResult CreateGame(
+    CreateGameRequest request)
     {
+        if (request.Players.Count < 2)
+        {
+            return BadRequest(
+                "At least 2 players are required.");
+        }
+
         var deck = _deckService.CreateDeck();
 
         _deckService.Shuffle(deck);
 
         var game = new Game
         {
-            Deck = deck,
-            Players =
-        {
-            new Player { Name = "Ashlin" },
-            new Player { Name = "Rahul" },
-            new Player { Name = "Arun" },
-            new Player { Name = "Vishnu" }
-        }
+            Deck = deck
         };
+
+        foreach (var playerName in request.Players)
+        {
+            game.Players.Add(
+                new Player
+                {
+                    Name = playerName
+                });
+        }
 
 
         _gameService.DealCards(game);

@@ -4,6 +4,7 @@ namespace UnoNoMercy.Api.Services
 {
     public class GameManager
     {
-        public Game? CurrentGame { get; set; }
+        public Dictionary<Guid, Game> Games { get; }
+            = new();
     }
 }

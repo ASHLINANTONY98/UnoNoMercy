@@ -71,42 +71,48 @@ public class GameController : ControllerBase
             _deckService.Shuffle(game.Deck);
         }
 
-        _gameManager.CurrentGame = game;
+        var gameId = Guid.NewGuid();
+
+        _gameManager.Games[gameId] = game;
+
+        return Ok(
+            new CreateGameResponse
+            {
+                GameId = gameId,
+                State = _gameService.GetGameState(game)
+            });
+
+    }
+
+    [HttpGet("state/{gameId}")]
+    public IActionResult GetState(Guid gameId)
+    {
+        if (!_gameManager.Games.TryGetValue(
+            gameId,
+            out var game))
+        {
+            return NotFound("Game not found.");
+        }
 
         return Ok(
             _gameService.GetGameState(game));
     }
 
-    [HttpGet("state")]
-    public IActionResult GetState()
+    [HttpPost("next-turn/{gameId}")]
+    public IActionResult NextTurn(Guid gameId)
     {
-        if (_gameManager.CurrentGame == null)
+        if (!_gameManager.Games.TryGetValue(
+            gameId,
+            out var game))
         {
-            return NotFound(
-                "No active game found.");
+            return NotFound("Game not found.");
         }
 
-        return Ok(
-            _gameService.GetGameState(
-                _gameManager.CurrentGame));
-    }
-
-    [HttpPost("next-turn")]
-    public IActionResult NextTurn()
-    {
-        if (_gameManager.CurrentGame == null)
-        {
-            return NotFound(
-                "No active game found.");
-        }
-
-        var continueGame =
-            _gameService.TakeTurn(
-                _gameManager.CurrentGame);
+        _gameService.TakeTurn(game);
 
         return Ok(
-            _gameService.GetGameState(
-                _gameManager.CurrentGame));
+            _gameService.GetGameState(game));
     }
+
 
 }

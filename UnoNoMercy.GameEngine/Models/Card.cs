@@ -18,6 +18,9 @@ namespace UnoNoMercy.GameEngine.Models
             if (Type == CardType.Wild)
                 return "Wild";
 
+            if (Type == CardType.WildDrawSix)
+                return "Wild Draw Six";
+
             if (Type == CardType.DrawTen)
                 return $"{Color} Draw Ten";
 

@@ -91,6 +91,16 @@ namespace UnoNoMercy.GameEngine.Services
                     Type = CardType.WildDrawFour
                 });
             }
+
+            for (int i = 0; i < 4; i++)
+            {
+                deck.Add(new Card
+                {
+                    Color = CardColor.Wild,
+                    Type = CardType.WildDrawSix
+                });
+            }
+
             return deck;
         }
 

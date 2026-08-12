@@ -111,8 +111,7 @@ namespace UnoNoMercy.GameEngine.Services
 
         private bool IsWildCard(Card card)
         {
-            return card.Type == CardType.Wild ||
-                   card.Type == CardType.WildDrawFour;
+            return card.Type.ToString().StartsWith("Wild");
         }
 
 
@@ -122,7 +121,8 @@ namespace UnoNoMercy.GameEngine.Services
             Card topCard)
         {
             if (cardToPlay.Type == CardType.Wild ||
-                cardToPlay.Type == CardType.WildDrawFour)
+                cardToPlay.Type == CardType.WildDrawFour ||
+                cardToPlay.Type == CardType.WildDrawSix)
             {
                 return true;
             }
@@ -390,6 +390,23 @@ namespace UnoNoMercy.GameEngine.Services
                         break;
                     }
 
+                case CardType.WildDrawSix:
+                    {
+                        game.ActiveColor =
+                            GetBestColor(player);
+
+                        game.PendingDrawCount += 6;
+                        game.CurrentStackValue = 6;
+
+                        Console.WriteLine(
+                            $"🔥 Draw penalty = {game.PendingDrawCount}");
+
+                        Console.WriteLine(
+                            $"🌈 Wild Draw Six! Color changed to {game.ActiveColor}");
+
+                        break;
+                    }
+
                 case CardType.DrawTen:
                     {
                         game.PendingDrawCount += 10;
@@ -460,7 +477,7 @@ namespace UnoNoMercy.GameEngine.Services
             {
                 CardType.DrawTwo => 2,
                 CardType.WildDrawFour => 4,
-                //CardType.WildDrawSix => 6,
+                CardType.WildDrawSix => 6,
                 CardType.DrawTen => 10,
                 _ => 0
             };

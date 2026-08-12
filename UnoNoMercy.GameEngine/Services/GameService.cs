@@ -120,9 +120,7 @@ namespace UnoNoMercy.GameEngine.Services
             Card cardToPlay,
             Card topCard)
         {
-            if (cardToPlay.Type == CardType.Wild ||
-                cardToPlay.Type == CardType.WildDrawFour ||
-                cardToPlay.Type == CardType.WildDrawSix)
+            if (IsWildCard(cardToPlay))
             {
                 return true;
             }
@@ -170,6 +168,7 @@ namespace UnoNoMercy.GameEngine.Services
 
         public bool TakeTurn(Game game)
         {
+
             if (IsLastPlayerStanding(game))
             {
                 var winner = game.Players
@@ -178,8 +177,25 @@ namespace UnoNoMercy.GameEngine.Services
                 Console.WriteLine(
                     $"👑 {winner.Name} is the last player standing!");
 
+                Console.WriteLine();
+                Console.WriteLine("========== GAME STATS ==========");
+
+                Console.WriteLine(
+                    $"Turns Played: {game.TotalTurns}");
+
+                Console.WriteLine(
+                    $"Largest Stack: {game.LargestStack}");
+
+                Console.WriteLine(
+                    $"Players Eliminated: {game.Eliminations}");
+
+                Console.WriteLine(
+                    "===============================");
+
                 return false;
             }
+
+            game.TotalTurns++;
 
             var player = GetCurrentPlayer(game);
 
@@ -187,11 +203,12 @@ namespace UnoNoMercy.GameEngine.Services
             if (game.PendingDrawCount > 0)
             {
                 var stackCard = player.Hand
-                    .Where(c => GetDrawValue(c) > 0)
-                    .OrderBy(c => GetDrawValue(c))
-                    .FirstOrDefault(c =>
+                    .Where(c =>
                         GetDrawValue(c) >=
-                        game.CurrentStackValue);
+                        game.CurrentStackValue)
+                    .OrderByDescending(c =>
+                        GetDrawValue(c))
+                    .FirstOrDefault();
 
                 if (stackCard != null)
                 {
@@ -219,7 +236,7 @@ namespace UnoNoMercy.GameEngine.Services
                         DrawCard(game));
                 }
 
-                CheckMercyRule(player);
+                CheckMercyRule(game, player);
 
                 if (player.IsEliminated)
                 {
@@ -272,19 +289,35 @@ namespace UnoNoMercy.GameEngine.Services
 
                 player.Hand.Add(drawnCard);
 
-                CheckMercyRule(player);
+                CheckMercyRule(game, player);
 
                 Console.WriteLine(
                     $"{player.Name} drew {drawnCard}");
             }
 
-            if (HasWon(player))
+            if (HasWon(player) && game.PendingDrawCount == 0)
             {
                 Console.WriteLine(
                     $"🏆 {player.Name} WINS!");
 
+                Console.WriteLine();
+                Console.WriteLine("========== GAME STATS ==========");
+
+                Console.WriteLine(
+                    $"Turns Played: {game.TotalTurns}");
+
+                Console.WriteLine(
+                    $"Largest Stack: {game.LargestStack}");
+
+                Console.WriteLine(
+                    $"Players Eliminated: {game.Eliminations}");
+
+                Console.WriteLine(
+                    "===============================");
+
                 return false;
             }
+
 
             NextTurn(game);
 
@@ -356,6 +389,11 @@ namespace UnoNoMercy.GameEngine.Services
                         game.PendingDrawCount += 2;
                         game.CurrentStackValue = 2;
 
+                        game.LargestStack =
+                            Math.Max(
+                                game.LargestStack,
+                                game.PendingDrawCount);
+
                         Console.WriteLine(
                             $"🔥 Draw penalty = {game.PendingDrawCount}");
 
@@ -381,6 +419,11 @@ namespace UnoNoMercy.GameEngine.Services
                         game.PendingDrawCount += 4;
                         game.CurrentStackValue = 4;
 
+                        game.LargestStack =
+                            Math.Max(
+                                game.LargestStack,
+                                game.PendingDrawCount);
+
                         Console.WriteLine(
                             $"🔥 Draw penalty = {game.PendingDrawCount}");
 
@@ -398,6 +441,11 @@ namespace UnoNoMercy.GameEngine.Services
                         game.PendingDrawCount += 6;
                         game.CurrentStackValue = 6;
 
+                        game.LargestStack =
+                            Math.Max(
+                                game.LargestStack,
+                                game.PendingDrawCount);
+
                         Console.WriteLine(
                             $"🔥 Draw penalty = {game.PendingDrawCount}");
 
@@ -412,8 +460,40 @@ namespace UnoNoMercy.GameEngine.Services
                         game.PendingDrawCount += 10;
                         game.CurrentStackValue = 10;
 
+                        game.LargestStack =
+                            Math.Max(
+                                game.LargestStack,
+                                game.PendingDrawCount);
+
                         Console.WriteLine(
                             $"💀 Draw penalty = {game.PendingDrawCount}");
+
+                        break;
+                    }
+
+                case CardType.WildReverseDrawFour:
+                    {
+                        game.ActiveColor =
+                            GetBestColor(player);
+
+                        game.Direction *= -1;
+
+                        game.PendingDrawCount += 4;
+                        game.CurrentStackValue = 4;
+
+                        game.LargestStack =
+                            Math.Max(
+                                game.LargestStack,
+                                game.PendingDrawCount);
+
+                        Console.WriteLine(
+                            "🔄 Reverse activated!");
+
+                        Console.WriteLine(
+                            $"🔥 Draw penalty = {game.PendingDrawCount}");
+
+                        Console.WriteLine(
+                            $"🌈 Wild Reverse Draw Four! Color changed to {game.ActiveColor}");
 
                         break;
                     }
@@ -452,11 +532,14 @@ namespace UnoNoMercy.GameEngine.Services
             game.Players[0].Hand = lastHand;
         }
 
-        private void CheckMercyRule(Player player)
+        private void CheckMercyRule(Game game, Player player)
         {
+
             if (player.Hand.Count >= 25)
             {
                 player.IsEliminated = true;
+
+                game.Eliminations++;
 
                 player.Hand.Clear();
 
@@ -477,6 +560,7 @@ namespace UnoNoMercy.GameEngine.Services
             {
                 CardType.DrawTwo => 2,
                 CardType.WildDrawFour => 4,
+                CardType.WildReverseDrawFour => 4,
                 CardType.WildDrawSix => 6,
                 CardType.DrawTen => 10,
                 _ => 0

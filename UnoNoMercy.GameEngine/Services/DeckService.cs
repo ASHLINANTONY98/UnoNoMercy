@@ -101,6 +101,16 @@ namespace UnoNoMercy.GameEngine.Services
                 });
             }
 
+            for (int i = 0; i < 4; i++)
+            {
+                deck.Add(new Card
+                {
+                    Color = CardColor.Wild,
+                    Type = CardType.WildReverseDrawFour
+                });
+            }
+
+
             return deck;
         }
 

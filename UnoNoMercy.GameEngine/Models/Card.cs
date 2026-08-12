@@ -24,6 +24,9 @@ namespace UnoNoMercy.GameEngine.Models
             if (Type == CardType.DrawTen)
                 return $"{Color} Draw Ten";
 
+            if (Type == CardType.WildReverseDrawFour)
+                return "Wild Reverse Draw Four";
+
             return $"{Color} {Type}";
         }
     }

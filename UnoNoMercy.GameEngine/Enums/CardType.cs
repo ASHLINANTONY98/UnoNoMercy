@@ -9,6 +9,7 @@
         Wild,
         WildDrawFour,
         DrawTen,
-        WildDrawSix
+        WildDrawSix,
+        WildReverseDrawFour
     }
 }

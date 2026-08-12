@@ -1,4 +1,5 @@
-﻿using UnoNoMercy.GameEngine.Models;
+﻿using UnoNoMercy.GameEngine.Enums;
+using UnoNoMercy.GameEngine.Models;
 using UnoNoMercy.GameEngine.Services;
 
 var deckService = new DeckService();
@@ -23,11 +24,25 @@ var gameService = new GameService();
 
 gameService.DealCards(game);
 
-var startingCard = gameService.DrawCard(game);
+Card startingCard;
 
-game.DiscardPile.Add(startingCard);
+while (true)
+{
+    startingCard = gameService.DrawCard(game);
+
+    if (startingCard.Type == CardType.Number)
+    {
+        game.DiscardPile.Add(startingCard);
+        break;
+    }
+
+    game.Deck.Add(startingCard);
+
+    deckService.Shuffle(game.Deck);
+}
 
 Console.WriteLine($"Starting Card: {startingCard}");
+
 Console.WriteLine();
 
 Console.WriteLine("=== GAME STARTED ===");

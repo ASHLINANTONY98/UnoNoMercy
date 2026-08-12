@@ -19,5 +19,11 @@ namespace UnoNoMercy.GameEngine.Models
         public int PendingDrawCount { get; set; } = 0;
 
         public int CurrentStackValue { get; set; } = 0;
+
+        public int TotalTurns { get; set; }
+
+        public int LargestStack { get; set; }
+
+        public int Eliminations { get; set; }
     }
 }

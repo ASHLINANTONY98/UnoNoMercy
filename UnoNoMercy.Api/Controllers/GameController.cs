@@ -76,8 +76,6 @@ public class GameController : ControllerBase
                 "No active game found.");
         }
 
-        var gameService = new GameService();
-
         return Ok(
             _gameService.GetGameState(
                 _gameManager.CurrentGame));

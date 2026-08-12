@@ -625,5 +625,53 @@ namespace UnoNoMercy.GameEngine.Services
                 })
                 .ToList();
         }
+
+        public PlayCardResponse PlayPlayerCard(
+            Game game,
+            string playerName,
+            string cardId)
+        {
+            var player = GetCurrentPlayer(game);
+
+            if (player.Name != playerName)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Not your turn."
+                };
+            }
+
+            var card = player.Hand
+                .FirstOrDefault(c => c.Id == cardId);
+
+            if (card == null)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Card not found."
+                };
+            }
+
+            var topCard = GetTopCard(game);
+
+            if (!CanPlayCard(game, card, topCard))
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Invalid card."
+                };
+            }
+
+            PlayCard(game, player, card);
+
+            return new PlayCardResponse
+            {
+                Success = true,
+                Message = "Card played successfully."
+            };
+        }
     }
 }

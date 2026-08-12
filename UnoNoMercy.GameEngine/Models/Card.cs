@@ -4,6 +4,9 @@ namespace UnoNoMercy.GameEngine.Models
 {
     public class Card
     {
+        public string Id { get; set; }
+            = Guid.NewGuid().ToString();
+
         public CardColor Color { get; set; }
         public CardType Type { get; set; }
         public int? Number { get; set; }

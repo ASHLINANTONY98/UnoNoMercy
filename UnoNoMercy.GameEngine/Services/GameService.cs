@@ -605,5 +605,25 @@ namespace UnoNoMercy.GameEngine.Services
                     .ToList()
             };
         }
+
+        public List<CardDto> GetPlayerHand(
+            Game game,
+            string playerName)
+        {
+            var player = game.Players
+                .FirstOrDefault(p =>
+                    p.Name == playerName);
+
+            if (player == null)
+                return new();
+
+            return player.Hand
+                .Select(card => new CardDto
+                {
+                    Id = card.Id,
+                    DisplayText = card.ToString()
+                })
+                .ToList();
+        }
     }
 }

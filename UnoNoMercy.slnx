@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="UnoNoMercy.Api/UnoNoMercy.Api.csproj" />
   <Project Path="UnoNoMercy.ConsoleTest/UnoNoMercy.ConsoleTest.csproj" />
   <Project Path="UnoNoMercy.GameEngine/UnoNoMercy.GameEngine.csproj" />
 </Solution>

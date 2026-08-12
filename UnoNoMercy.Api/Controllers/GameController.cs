@@ -143,6 +143,24 @@ public class GameController : ControllerBase
             });
     }
 
+    [HttpGet("hand/{gameId}/{playerName}")]
+    public IActionResult GetHand(
+        Guid gameId,
+        string playerName)
+    {
+        if (!_gameManager.Games.TryGetValue(
+            gameId,
+            out var game))
+        {
+            return NotFound(
+                "Game not found.");
+        }
+
+        return Ok(
+            _gameService.GetPlayerHand(
+                game,
+                playerName));
+    }
 
 
 }

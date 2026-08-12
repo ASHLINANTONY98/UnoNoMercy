@@ -8,12 +8,43 @@ namespace UnoNoMercy.GameEngine.Services
     {
         public Card DrawCard(Game game)
         {
+            if (game.Deck.Count == 0)
+            {
+                RebuildDeck(game);
+            }
+
             var card = game.Deck[0];
 
             game.Deck.RemoveAt(0);
 
             return card;
         }
+        private void RebuildDeck(Game game)
+        {
+            if (game.DiscardPile.Count <= 1)
+                throw new Exception("No cards available.");
+
+            var topCard = game.DiscardPile.Last();
+
+            var cardsToShuffle =
+                game.DiscardPile
+                    .Take(game.DiscardPile.Count - 1)
+                    .ToList();
+
+            game.DiscardPile.Clear();
+
+            game.DiscardPile.Add(topCard);
+
+            var rng = new Random();
+
+            game.Deck = cardsToShuffle
+                .OrderBy(x => rng.Next())
+                .ToList();
+
+            Console.WriteLine(
+                "🔄 Deck rebuilt from discard pile.");
+        }
+
         public void DealCards(Game game, int cardsPerPlayer = 7)
         {
             foreach (var player in game.Players)
@@ -27,7 +58,14 @@ namespace UnoNoMercy.GameEngine.Services
 
         public Player GetCurrentPlayer(Game game)
         {
-            return game.Players[game.CurrentPlayerIndex];
+            while (game.Players[game.CurrentPlayerIndex]
+                .IsEliminated)
+            {
+                NextTurn(game);
+            }
+
+            return game.Players[
+                game.CurrentPlayerIndex];
         }
 
         public void NextTurn(Game game)
@@ -126,6 +164,17 @@ namespace UnoNoMercy.GameEngine.Services
 
         public bool TakeTurn(Game game)
         {
+            if (IsLastPlayerStanding(game))
+            {
+                var winner = game.Players
+                    .First(p => !p.IsEliminated);
+
+                Console.WriteLine(
+                    $"👑 {winner.Name} is the last player standing!");
+
+                return false;
+            }
+
             var player = GetCurrentPlayer(game);
 
             // NO MERCY STACKING CHECK
@@ -160,6 +209,18 @@ namespace UnoNoMercy.GameEngine.Services
                 {
                     player.Hand.Add(
                         DrawCard(game));
+                }
+
+                CheckMercyRule(player);
+
+                if (player.IsEliminated)
+                {
+                    
+                    game.PendingDrawCount = 0;
+
+                    NextTurn(game);
+
+                    return true;
                 }
 
                 Console.WriteLine(
@@ -201,6 +262,8 @@ namespace UnoNoMercy.GameEngine.Services
 
                 player.Hand.Add(drawnCard);
 
+                CheckMercyRule(player);
+
                 Console.WriteLine(
                     $"{player.Name} drew {drawnCard}");
             }
@@ -232,14 +295,28 @@ namespace UnoNoMercy.GameEngine.Services
             {
                 if (card.Number == 7)
                 {
-                    Console.WriteLine(
-                        "🔄 7-Swap activated!");
+                    var targetPlayer =
+                        GetPlayerWithMostCards(game);
+
+                    if (targetPlayer != player)
+                    {
+                        var tempHand = player.Hand;
+
+                        player.Hand = targetPlayer.Hand;
+
+                        targetPlayer.Hand = tempHand;
+
+                        Console.WriteLine(
+                            $"🔄 {player.Name} swapped hands with {targetPlayer.Name}!");
+                    }
                 }
 
                 if (card.Number == 0)
                 {
+                    RotateHands(game);
+
                     Console.WriteLine(
-                        "♻ 0-Rotate activated!");
+                        "♻ Hands rotated!");
                 }
             }
             switch (card.Type)
@@ -330,6 +407,46 @@ namespace UnoNoMercy.GameEngine.Services
             return player.Hand.Any(c =>
                 c.Type == CardType.DrawTwo ||
                 c.Type == CardType.WildDrawFour);
+        }
+
+        private Player GetPlayerWithMostCards(Game game)
+        {
+            return game.Players
+                .OrderByDescending(p => p.Hand.Count)
+                .First();
+        }
+
+        private void RotateHands(Game game)
+        {
+            var lastHand =
+                game.Players.Last().Hand;
+
+            for (int i = game.Players.Count - 1; i > 0; i--)
+            {
+                game.Players[i].Hand =
+                    game.Players[i - 1].Hand;
+            }
+
+            game.Players[0].Hand = lastHand;
+        }
+
+        private void CheckMercyRule(Player player)
+        {
+            if (player.Hand.Count >= 25)
+            {
+                player.IsEliminated = true;
+
+                player.Hand.Clear();
+
+                Console.WriteLine(
+                    $"☠ {player.Name} has been eliminated!");
+            }
+        }
+
+        private bool IsLastPlayerStanding(Game game)
+        {
+            return game.Players
+                .Count(p => !p.IsEliminated) == 1;
         }
     }
 }

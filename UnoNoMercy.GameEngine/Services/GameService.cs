@@ -708,5 +708,47 @@ namespace UnoNoMercy.GameEngine.Services
             };
         }
 
+        public DrawCardResponse DrawPlayerCard(
+            Game game,
+            string playerName)
+        {
+            if (game.IsGameOver)
+            {
+                return new DrawCardResponse
+                {
+                    Success = false,
+                    Message = "Game already finished."
+                };
+            }
+
+            var player = GetCurrentPlayer(game);
+
+            if (player.Name != playerName)
+            {
+                return new DrawCardResponse
+                {
+                    Success = false,
+                    Message = "Not your turn."
+                };
+            }
+
+            game.TotalTurns++;
+
+            var drawnCard = DrawCard(game);
+
+            player.Hand.Add(drawnCard);
+
+            CheckMercyRule(game, player);
+
+            NextTurn(game);
+
+            return new DrawCardResponse
+            {
+                Success = true,
+                Message = "Card drawn successfully.",
+                DrawnCard = drawnCard.ToString()
+            };
+        }
+
     }
 }

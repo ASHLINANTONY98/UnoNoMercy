@@ -74,12 +74,16 @@ public class GameController : ControllerBase
 
         var gameId = Guid.NewGuid();
 
+        game.RoomCode =
+            RoomCodeGenerator.Generate();
+
         _gameManager.Games[gameId] = game;
 
         return Ok(
             new CreateGameResponse
             {
                 GameId = gameId,
+                RoomCode = game.RoomCode,
                 State = _gameService.GetGameState(game)
             });
 

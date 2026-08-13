@@ -31,5 +31,7 @@ namespace UnoNoMercy.GameEngine.Models
         public bool IsGameOver { get; set; }
 
         public bool HasDrawnThisTurn { get; set; }
+
+        public string RoomCode { get; set; } = string.Empty;
     }
 }

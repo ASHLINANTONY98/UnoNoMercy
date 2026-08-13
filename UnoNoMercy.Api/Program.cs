@@ -1,3 +1,4 @@
+using UnoNoMercy.Api.Hubs;
 using UnoNoMercy.Api.Services;
 using UnoNoMercy.GameEngine.Services;
 
@@ -7,6 +8,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<GameManager>();
 builder.Services.AddSingleton<GameService>();
@@ -25,5 +28,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<GameHub>("/gamehub");
 
 app.Run();

@@ -251,6 +251,12 @@ public class GameController : ControllerBase
 
         var game = gameEntry.Value;
 
+        if (game.HasStarted)
+        {
+            return BadRequest(
+                "Game already started.");
+        }
+
         if (game.Players.Any(x =>
             x.Name == request.PlayerName))
         {

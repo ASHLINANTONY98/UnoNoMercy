@@ -97,6 +97,12 @@ public class GameController : ControllerBase
             return NotFound("Game not found.");
         }
 
+        if (!game.HasStarted)
+        {
+            return BadRequest(
+                "Game not started.");
+        }
+
         if (game.IsGameOver)
         {
             return BadRequest(
@@ -151,8 +157,8 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("play-card")]
-    public IActionResult PlayCard(
-    PlayCardRequest request)
+    public async Task<IActionResult> PlayCard(
+        PlayCardRequest request)
     {
         if (!_gameManager.Games.TryGetValue(
             request.GameId,
@@ -168,10 +174,16 @@ public class GameController : ControllerBase
                 request.PlayerName,
                 request.CardId);
 
+        if (result.Success)
+        {
+            await BroadcastGameState(game);
+        }
+
+
         return Ok(result);
     }
     [HttpPost("draw-card")]
-    public IActionResult DrawCard(
+    public async Task<IActionResult> DrawCard(
         DrawCardRequest request)
     {
         if (!_gameManager.Games.TryGetValue(
@@ -187,11 +199,16 @@ public class GameController : ControllerBase
                 game,
                 request.PlayerName);
 
+        if (result.Success)
+        {
+            await BroadcastGameState(game);
+        }
+
         return Ok(result);
     }
 
     [HttpPost("pass-turn")]
-    public IActionResult PassTurn(
+    public async Task<IActionResult> PassTurn(
         PassTurnRequest request)
     {
         if (!_gameManager.Games.TryGetValue(
@@ -213,12 +230,16 @@ public class GameController : ControllerBase
                 "Unable to pass turn.");
         }
 
-        return Ok(
-            _gameService.GetGameState(game));
+        var gameState =
+            _gameService.GetGameState(game);
+
+        await BroadcastGameState(game);
+
+        return Ok(gameState);
     }
 
     [HttpPost("join")]
-    public IActionResult JoinGame(
+    public async Task<IActionResult> JoinGame(
     JoinGameRequest request)
     {
         var gameEntry = _gameManager.Games
@@ -253,18 +274,19 @@ public class GameController : ControllerBase
                 Name = request.PlayerName
             });
 
-        _hubContext.Clients
+        await _hubContext.Clients
             .Group(game.RoomCode)
             .SendAsync(
                 "PlayerJoined",
                 request.PlayerName);
+
 
         return Ok(
             _gameService.GetGameState(game));
     }
 
     [HttpPost("start")]
-    public IActionResult StartGame(
+    public async Task<IActionResult> StartGame(
     StartGameRequest request)
     {
         var gameEntry =
@@ -320,7 +342,7 @@ public class GameController : ControllerBase
 
         game.HasStarted = true;
 
-        _hubContext.Clients
+        await _hubContext.Clients
             .Group(game.RoomCode)
             .SendAsync(
                 "GameStarted",
@@ -328,6 +350,18 @@ public class GameController : ControllerBase
 
         return Ok(
             "Game started.");
+
     }
+
+    private async Task BroadcastGameState(
+    Game game)
+    {
+        await _hubContext.Clients
+            .Group(game.RoomCode)
+            .SendAsync(
+                "GameStateUpdated",
+                _gameService.GetGameState(game));
+    }
+
 
 }

@@ -274,4 +274,40 @@ public class GameController : ControllerBase
             _gameService.GetGameState(game));
     }
 
+    [HttpPost("start")]
+    public IActionResult StartGame(
+    StartGameRequest request)
+    {
+        var gameEntry =
+            _gameManager.Games
+                .FirstOrDefault(x =>
+                    x.Value.RoomCode ==
+                    request.RoomCode);
+
+        if (gameEntry.Value == null)
+        {
+            return NotFound(
+                "Room not found.");
+        }
+
+        var game = gameEntry.Value;
+
+        if (game.HasStarted)
+        {
+            return BadRequest(
+                "Game already started.");
+        }
+
+        if (game.Players.Count < 2)
+        {
+            return BadRequest(
+                "Minimum 2 players required.");
+        }
+
+        game.HasStarted = true;
+
+        return Ok(
+            "Game started.");
+    }
+
 }

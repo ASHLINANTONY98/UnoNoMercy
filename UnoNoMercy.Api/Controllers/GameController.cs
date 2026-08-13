@@ -53,26 +53,6 @@ public class GameController : ControllerBase
                 });
         }
 
-
-        _gameService.DealCards(game);
-
-        Card startingCard;
-
-        while (true)
-        {
-            startingCard = _gameService.DrawCard(game);
-
-            if (startingCard.Type == CardType.Number)
-            {
-                game.DiscardPile.Add(startingCard);
-                break;
-            }
-
-            game.Deck.Add(startingCard);
-
-            _deckService.Shuffle(game.Deck);
-        }
-
         var gameId = Guid.NewGuid();
 
         game.RoomCode =
@@ -302,6 +282,31 @@ public class GameController : ControllerBase
         {
             return BadRequest(
                 "Minimum 2 players required.");
+        }
+
+        _gameService.DealCards(game);
+
+        Card startingCard;
+
+        while (true)
+        {
+            startingCard =
+                _gameService.DrawCard(game);
+
+            if (startingCard.Type ==
+                CardType.Number)
+            {
+                game.DiscardPile.Add(
+                    startingCard);
+
+                break;
+            }
+
+            game.Deck.Add(
+                startingCard);
+
+            _deckService.Shuffle(
+                game.Deck);
         }
 
         game.HasStarted = true;

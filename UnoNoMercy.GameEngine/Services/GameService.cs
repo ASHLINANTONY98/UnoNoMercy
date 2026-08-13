@@ -587,10 +587,14 @@ namespace UnoNoMercy.GameEngine.Services
             return new GameStateDto
             {
                 CurrentPlayer =
-                    GetCurrentPlayer(game).Name,
+                    game.HasStarted
+                        ? GetCurrentPlayer(game).Name
+                        : "Waiting for game start",
 
                 TopCard =
-                    GetTopCard(game).ToString(),
+                    game.DiscardPile.Any()
+                        ? GetTopCard(game).ToString()
+                        : "Game not started",
 
                 PendingDrawCount =
                     game.PendingDrawCount,
@@ -634,6 +638,14 @@ namespace UnoNoMercy.GameEngine.Services
             string playerName,
             string cardId)
         {
+            if (!game.HasStarted)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Game not started."
+                };
+            }
 
             if (game.IsGameOver)
             {
@@ -729,6 +741,15 @@ namespace UnoNoMercy.GameEngine.Services
             string playerName)
         {
 
+            if (!game.HasStarted)
+            {
+                return new DrawCardResponse
+                {
+                    Success = false,
+                    Message = "Game not started."
+                };
+            }
+
             if (game.HasDrawnThisTurn)
             {
                 return new DrawCardResponse
@@ -803,6 +824,12 @@ namespace UnoNoMercy.GameEngine.Services
             Game game,
             string playerName)
         {
+
+            if (!game.HasStarted)
+            {
+                return false;
+            }
+
             var player = GetCurrentPlayer(game);
 
             if (player.Name != playerName)

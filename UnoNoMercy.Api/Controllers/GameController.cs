@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using UnoNoMercy.Api.Hubs;
 using UnoNoMercy.Api.Models;
 using UnoNoMercy.Api.Services;
 using UnoNoMercy.GameEngine.DTOs;
@@ -16,13 +18,14 @@ public class GameController : ControllerBase
     private readonly GameManager _gameManager;
     private readonly GameService _gameService;
     private readonly DeckService _deckService;
+    private readonly IHubContext<GameHub> _hubContext;
 
-    public GameController(GameManager gameManager, GameService gameService, DeckService deckService)
+    public GameController(GameManager gameManager, GameService gameService, DeckService deckService, IHubContext<GameHub> hubContext)
     {
         _gameManager = gameManager;
         _gameService = gameService;
         _deckService = deckService;
-
+        _hubContext = hubContext;
     }
 
     [HttpPost("create")]

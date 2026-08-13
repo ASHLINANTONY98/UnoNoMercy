@@ -668,13 +668,27 @@ namespace UnoNoMercy.GameEngine.Services
 
             var topCard = GetTopCard(game);
 
-            if (!CanPlayCard(game, card, topCard))
+            if (HasPendingPenalty(game))
             {
-                return new PlayCardResponse
+                if (GetDrawValue(card) < game.CurrentStackValue)
                 {
-                    Success = false,
-                    Message = "Invalid card."
-                };
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = $"Must stack a draw card or take {game.PendingDrawCount} cards."
+                    };
+                }
+            }
+            else
+            {
+                if (!CanPlayCard(game, card, topCard))
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Invalid card."
+                    };
+                }
             }
 
             game.TotalTurns++;
@@ -746,6 +760,29 @@ namespace UnoNoMercy.GameEngine.Services
 
             game.TotalTurns++;
 
+            if (HasPendingPenalty(game))
+            {
+                for (int i = 0; i < game.PendingDrawCount; i++)
+                {
+                    player.Hand.Add(DrawCard(game));
+                }
+
+                CheckMercyRule(game, player);
+
+                int penalty = game.PendingDrawCount;
+
+                game.PendingDrawCount = 0;
+                game.CurrentStackValue = 0;
+                game.HasDrawnThisTurn = false;
+
+                NextTurn(game);
+
+                return new DrawCardResponse
+                {
+                    Success = true,
+                    Message = $"Drew {penalty} penalty cards."
+                };
+            }
             var drawnCard = DrawCard(game);
 
             player.Hand.Add(drawnCard);
@@ -753,8 +790,6 @@ namespace UnoNoMercy.GameEngine.Services
             game.HasDrawnThisTurn = true;
 
             CheckMercyRule(game, player);
-
-            //NextTurn(game);
 
             return new DrawCardResponse
             {
@@ -783,5 +818,9 @@ namespace UnoNoMercy.GameEngine.Services
             return true;
         }
 
+        private bool HasPendingPenalty(Game game)
+        {
+            return game.PendingDrawCount > 0;
+        }
     }
 }

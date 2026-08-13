@@ -253,6 +253,12 @@ public class GameController : ControllerBase
                 Name = request.PlayerName
             });
 
+        _hubContext.Clients
+            .Group(game.RoomCode)
+            .SendAsync(
+                "PlayerJoined",
+                request.PlayerName);
+
         return Ok(
             _gameService.GetGameState(game));
     }
@@ -313,6 +319,12 @@ public class GameController : ControllerBase
         }
 
         game.HasStarted = true;
+
+        _hubContext.Clients
+            .Group(game.RoomCode)
+            .SendAsync(
+                "GameStarted",
+                _gameService.GetGameState(game));
 
         return Ok(
             "Game started.");

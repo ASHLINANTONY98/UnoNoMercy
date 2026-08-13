@@ -2,6 +2,7 @@
 using UnoNoMercy.Api.Models;
 using UnoNoMercy.Api.Services;
 using UnoNoMercy.GameEngine.DTOs;
+using UnoNoMercy.GameEngine.DTOs.UnoNoMercy.GameEngine.DTOs;
 using UnoNoMercy.GameEngine.Enums;
 using UnoNoMercy.GameEngine.Models;
 using UnoNoMercy.GameEngine.Services;
@@ -228,6 +229,40 @@ public class GameController : ControllerBase
             return BadRequest(
                 "Unable to pass turn.");
         }
+
+        return Ok(
+            _gameService.GetGameState(game));
+    }
+
+    [HttpPost("join")]
+    public IActionResult JoinGame(
+    JoinGameRequest request)
+    {
+        var gameEntry = _gameManager.Games
+            .FirstOrDefault(x =>
+                x.Value.RoomCode ==
+                request.RoomCode);
+
+        if (gameEntry.Value == null)
+        {
+            return NotFound(
+                "Room not found.");
+        }
+
+        var game = gameEntry.Value;
+
+        if (game.Players.Any(x =>
+            x.Name == request.PlayerName))
+        {
+            return BadRequest(
+                "Player already exists.");
+        }
+
+        game.Players.Add(
+            new Player
+            {
+                Name = request.PlayerName
+            });
 
         return Ok(
             _gameService.GetGameState(game));

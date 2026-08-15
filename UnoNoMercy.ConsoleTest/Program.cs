@@ -30,18 +30,18 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN: WILD DRAW SIX (+6)
+// ASHLIN GETS NORMAL WILD
 // ========================================
 
-var ashlinDrawSix = new Card
+var wildCard = new Card
 {
     Color = CardColor.Wild,
-    Type = CardType.WildDrawSix
+    Type = CardType.Wild
 };
 
-game.Players[0].Hand.Add(ashlinDrawSix);
+game.Players[0].Hand.Add(wildCard);
 
-// Extra card
+// Extra card so Ashlin doesn't win
 game.Players[0].Hand.Add(new Card
 {
     Color = CardColor.Red,
@@ -50,23 +50,14 @@ game.Players[0].Hand.Add(new Card
 });
 
 // ========================================
-// RAHUL: WILD DRAW TEN (+10)
+// RAHUL STARTING HAND
 // ========================================
 
-var rahulDrawTen = new Card
-{
-    Color = CardColor.Wild,
-    Type = CardType.WildDrawTen
-};
-
-game.Players[1].Hand.Add(rahulDrawTen);
-
-// Extra card
 game.Players[1].Hand.Add(new Card
 {
     Color = CardColor.Blue,
     Type = CardType.Number,
-    Number = 3
+    Number = 2
 });
 
 // ========================================
@@ -81,53 +72,37 @@ game.Players[2].Hand.Add(new Card
 });
 
 // ========================================
-// CONTROLLED DECK
-// ========================================
-
-// We need at least 16 cards because
-// Arun must receive the complete penalty.
-
-for (int i = 1; i <= 16; i++)
-{
-    game.Deck.Add(new Card
-    {
-        Color = CardColor.Red,
-        Type = CardType.Number,
-        Number = i % 10
-    });
-}
-
-// ========================================
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== +6 -> +10 PENALTY TEST ===");
+Console.WriteLine("=== NORMAL WILD COLOR TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
     $"Current Player BEFORE: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
+    $"Top Card: {gameService.GetTopCard(game)}");
+
+Console.WriteLine(
+    $"Active Color BEFORE: {game.ActiveColor}");
+
+Console.WriteLine(
     $"Pending Draw BEFORE: {game.PendingDrawCount}");
-
-Console.WriteLine(
-    $"Stack Value BEFORE: {game.CurrentStackValue}");
-
-Console.WriteLine(
-    $"Arun Hand BEFORE: {game.Players[2].Hand.Count}");
 
 Console.WriteLine();
 
+
 // ========================================
-// ASHLIN PLAYS +6
+// ASHLIN PLAYS WILD
 // ========================================
 
 var result1 = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    ashlinDrawSix.Id);
+    wildCard.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS +6 ===");
+Console.WriteLine("=== ASHLIN PLAYS WILD ===");
 
 Console.WriteLine(
     $"Success: {result1.Success}");
@@ -136,26 +111,27 @@ Console.WriteLine(
     $"Message: {result1.Message}");
 
 Console.WriteLine(
-    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
+    $"Current Player AFTER PLAY: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Pending Draw: {game.PendingDrawCount}");
+    $"Active Color AFTER PLAY: {game.ActiveColor}");
 
 Console.WriteLine(
-    $"Stack Value: {game.CurrentStackValue}");
+    $"Pending Draw AFTER PLAY: {game.PendingDrawCount}");
 
 Console.WriteLine();
 
+
 // ========================================
-// RAHUL PLAYS +10
+// RAHUL TRIES INVALID COLOR
 // ========================================
 
-var result2 = gameService.PlayPlayerCard(
+var result2 = gameService.ChooseWildColor(
     game,
     "Rahul",
-    rahulDrawTen.Id);
+    CardColor.Wild);
 
-Console.WriteLine("=== RAHUL STACKS +10 ===");
+Console.WriteLine("=== RAHUL TRIES TO CHOOSE WILD ===");
 
 Console.WriteLine(
     $"Success: {result2.Success}");
@@ -164,25 +140,24 @@ Console.WriteLine(
     $"Message: {result2.Message}");
 
 Console.WriteLine(
+    $"Active Color: {game.ActiveColor}");
+
+Console.WriteLine(
     $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
-
-Console.WriteLine(
-    $"Pending Draw: {game.PendingDrawCount}");
-
-Console.WriteLine(
-    $"Stack Value: {game.CurrentStackValue}");
 
 Console.WriteLine();
 
+
 // ========================================
-// ARUN TAKES PENALTY
+// RAHUL CHOOSES BLUE
 // ========================================
 
-var result3 = gameService.DrawPlayerCard(
+var result3 = gameService.ChooseWildColor(
     game,
-    "Arun");
+    "Rahul",
+    CardColor.Blue);
 
-Console.WriteLine("=== ARUN TAKES +16 PENALTY ===");
+Console.WriteLine("=== RAHUL CHOOSES BLUE ===");
 
 Console.WriteLine(
     $"Success: {result3.Success}");
@@ -191,38 +166,43 @@ Console.WriteLine(
     $"Message: {result3.Message}");
 
 Console.WriteLine(
-    $"Current Player AFTER DRAW: {gameService.GetCurrentPlayer(game).Name}");
+    $"Current Player AFTER COLOR: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Arun Hand AFTER: {game.Players[2].Hand.Count}");
+    $"Active Color AFTER COLOR: {game.ActiveColor}");
 
 Console.WriteLine(
-    $"Pending Draw AFTER: {game.PendingDrawCount}");
-
-Console.WriteLine(
-    $"Stack Value AFTER: {game.CurrentStackValue}");
-
-Console.WriteLine(
-    $"Direction: {game.Direction}");
+    $"Pending Draw: {game.PendingDrawCount}");
 
 Console.WriteLine();
 
-Console.WriteLine("=== EXPECTED ===");
 
-Console.WriteLine("Ashlin plays +6");
-Console.WriteLine("Pending Draw: 6");
+// ========================================
+// EXPECTED
+// ========================================
+
+Console.WriteLine("=== EXPECTED ===");
+Console.WriteLine();
+
+Console.WriteLine("1. Ashlin plays Normal Wild");
+Console.WriteLine("Current Player AFTER PLAY: Rahul");
+Console.WriteLine("Active Color AFTER PLAY:");
+Console.WriteLine("Pending Draw AFTER PLAY: 0");
+
+Console.WriteLine();
+
+Console.WriteLine("2. Rahul tries to choose Wild");
+Console.WriteLine("Success: False");
+Console.WriteLine(
+    "Message: Wild color must be Red, Blue, Green, or Yellow.");
+Console.WriteLine("Active Color:");
 Console.WriteLine("Current Player: Rahul");
 
 Console.WriteLine();
 
-Console.WriteLine("Rahul plays +10");
-Console.WriteLine("Pending Draw: 16");
-Console.WriteLine("Current Player: Arun");
-
-Console.WriteLine();
-
-Console.WriteLine("Arun takes +16 penalty");
-Console.WriteLine("Arun receives 16 cards");
+Console.WriteLine("3. Rahul chooses Blue");
+Console.WriteLine("Success: True");
+Console.WriteLine("Message: Wild color changed to Blue.");
+Console.WriteLine("Active Color: Blue");
+Console.WriteLine("Current Player: Rahul");
 Console.WriteLine("Pending Draw: 0");
-Console.WriteLine("Stack Value: 0");
-Console.WriteLine("Current Player: Ashlin");

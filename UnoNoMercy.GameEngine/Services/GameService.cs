@@ -459,11 +459,10 @@ namespace UnoNoMercy.GameEngine.Services
 
                 case CardType.Wild:
                     {
-
-                        game.ActiveColor = GetBestColor(player);
+                        game.ActiveColor = null;
 
                         Console.WriteLine(
-                            $"🌈 Wild! Color changed to {game.ActiveColor}");
+                            "🌈 Wild card played! Waiting for color selection.");
 
                         break;
                     }
@@ -885,6 +884,81 @@ namespace UnoNoMercy.GameEngine.Services
                 Success = true,
                 Message =
                     $"Color Roulette completed. Drew {drawnCount} card(s)."
+            };
+        }
+
+        public PlayCardResponse ChooseWildColor(
+    Game game,
+    string playerName,
+    CardColor chosenColor)
+        {
+            if (!game.HasStarted)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Game not started."
+                };
+            }
+
+            if (game.IsGameOver)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Game already finished."
+                };
+            }
+
+            var player = GetCurrentPlayer(game);
+
+            if (player.Name != playerName)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Not your turn."
+                };
+            }
+
+            if (chosenColor == CardColor.Wild)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Wild color must be Red, Blue, Green, or Yellow."
+                };
+            }
+
+            var topCard = GetTopCard(game);
+
+            if (topCard.Type != CardType.Wild)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Normal Wild color selection is not active."
+                };
+            }
+
+            if (game.ActiveColor != null)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Wild color has already been selected."
+                };
+            }
+
+            game.ActiveColor = chosenColor;
+
+            Console.WriteLine(
+                $"🌈 {player.Name} chose {chosenColor}.");
+
+            return new PlayCardResponse
+            {
+                Success = true,
+                Message = $"Wild color changed to {chosenColor}."
             };
         }
 

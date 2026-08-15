@@ -396,6 +396,25 @@ namespace UnoNoMercy.GameEngine.Services
                         break;
                     }
 
+                case CardType.DiscardAll:
+                    {
+                        var cardsToDiscard = player.Hand
+                            .Where(c =>
+                                c.Color == card.Color)
+                            .ToList();
+
+                        foreach (var cardToDiscard in cardsToDiscard)
+                        {
+                            player.Hand.Remove(cardToDiscard);
+                            game.DiscardPile.Add(cardToDiscard);
+                        }
+
+                        Console.WriteLine(
+                            $"🗑 Discard All! {player.Name} discarded all {card.Color} cards.");
+
+                        break;
+                    }
+
                 case CardType.Reverse:
                     {
                         game.Direction *= -1;
@@ -510,6 +529,18 @@ namespace UnoNoMercy.GameEngine.Services
 
                         Console.WriteLine(
                             $"💀 Draw penalty = {game.PendingDrawCount}");
+
+                        break;
+                    }
+
+                case CardType.WildColorRoulette:
+                    {
+                        game.ActiveColor = null;
+                        game.IsColorRouletteActive = true;
+                        game.RouletteChosenColor = null;
+
+                        Console.WriteLine(
+                            "🎰 Wild Color Roulette activated!");
 
                         break;
                     }
@@ -742,6 +773,118 @@ namespace UnoNoMercy.GameEngine.Services
             {
                 Success = true,
                 Message = "Card played successfully."
+            };
+        }
+
+        public PlayCardResponse ChooseRouletteColor(
+            Game game,
+            string playerName,
+            CardColor chosenColor)
+        {
+            if (!game.HasStarted)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Game not started."
+                };
+            }
+
+            if (game.IsGameOver)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Game already finished."
+                };
+            }
+
+            if (!game.IsColorRouletteActive)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Color Roulette is not active."
+                };
+            }
+
+            var player = GetCurrentPlayer(game);
+
+            if (player.Name != playerName)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Not your turn."
+                };
+            }
+
+            if (chosenColor == CardColor.Wild)
+            {
+                return new PlayCardResponse
+                {
+                    Success = false,
+                    Message = "Roulette color must be Red, Blue, Green, or Yellow."
+                };
+            }
+
+            game.RouletteChosenColor = chosenColor;
+
+            Console.WriteLine(
+                $"🎰 {player.Name} chose {chosenColor}.");
+
+            int drawnCount = 0;
+
+            while (true)
+            {
+                var drawnCard = DrawCard(game);
+
+                player.Hand.Add(drawnCard);
+
+                drawnCount++;
+
+                Console.WriteLine(
+                    $"🎰 Roulette drew: {drawnCard}");
+
+                CheckMercyRule(game, player);
+
+                if (player.IsEliminated)
+                {
+                    game.IsColorRouletteActive = false;
+                    game.RouletteChosenColor = null;
+                    game.ActiveColor = null;
+
+                    return new PlayCardResponse
+                    {
+                        Success = true,
+                        Message =
+                            $"{player.Name} was eliminated during Color Roulette."
+                    };
+                }
+
+                if (drawnCard.Color == chosenColor)
+                {
+                    break;
+                }
+            }
+
+            game.ActiveColor = chosenColor;
+
+            game.IsColorRouletteActive = false;
+
+            Console.WriteLine(
+                $"🎰 Roulette stopped! {chosenColor} was drawn.");
+
+            Console.WriteLine(
+                $"🎰 {player.Name} drew {drawnCount} card(s).");
+
+            NextTurn(game);
+
+            return new PlayCardResponse
+            {
+                Success = true,
+                Message =
+                    $"Color Roulette completed. Drew {drawnCount} card(s)."
             };
         }
 

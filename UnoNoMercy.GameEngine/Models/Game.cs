@@ -37,5 +37,9 @@ namespace UnoNoMercy.GameEngine.Models
         public bool HasStarted { get; set; } = false;
 
         public int TurnAdvance { get; set; } = 1;
+
+        public bool IsColorRouletteActive { get; set; } = false;
+
+        public CardColor? RouletteChosenColor { get; set; }
     }
 }

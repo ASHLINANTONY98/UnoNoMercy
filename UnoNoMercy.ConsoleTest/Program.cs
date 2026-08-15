@@ -10,7 +10,8 @@ var game = new Game
     {
         new Player { Name = "Ashlin" },
         new Player { Name = "Rahul" },
-        new Player { Name = "Arun" }
+        new Player { Name = "Arun" },
+        new Player { Name = "Neha" }
     }
 };
 
@@ -18,7 +19,16 @@ game.CurrentPlayerIndex = 0;
 game.Direction = 1;
 game.HasStarted = true;
 
-// Top card
+// ========================================
+// ELIMINATE RAHUL
+// ========================================
+
+game.Players[1].IsEliminated = true;
+
+// ========================================
+// TOP CARD
+// ========================================
+
 game.DiscardPile.Add(new Card
 {
     Color = CardColor.Red,
@@ -26,14 +36,17 @@ game.DiscardPile.Add(new Card
     Number = 5
 });
 
-// Ashlin +2
-var ashlinDrawTwo = new Card
+// ========================================
+// ASHLIN GETS SKIP EVERYONE
+// ========================================
+
+var skipEveryone = new Card
 {
     Color = CardColor.Red,
-    Type = CardType.DrawTwo
+    Type = CardType.SkipEveryone
 };
 
-game.Players[0].Hand.Add(ashlinDrawTwo);
+game.Players[0].Hand.Add(skipEveryone);
 
 game.Players[0].Hand.Add(new Card
 {
@@ -42,89 +55,98 @@ game.Players[0].Hand.Add(new Card
     Number = 2
 });
 
-// Rahul +2
-var rahulDrawTwo = new Card
-{
-    Color = CardColor.Blue,
-    Type = CardType.DrawTwo
-};
+// ========================================
+// ARUN
+// ========================================
 
-game.Players[1].Hand.Add(rahulDrawTwo);
-
-game.Players[1].Hand.Add(new Card
-{
-    Color = CardColor.Green,
-    Type = CardType.Number,
-    Number = 7
-});
-
-// Arun
 game.Players[2].Hand.Add(new Card
 {
     Color = CardColor.Green,
     Type = CardType.Number,
-    Number = 3
+    Number = 4
 });
 
-Console.WriteLine("=== EQUAL +2 STACK TEST ===");
+// ========================================
+// NEHA
+// ========================================
+
+game.Players[3].Hand.Add(new Card
+{
+    Color = CardColor.Yellow,
+    Type = CardType.Number,
+    Number = 7
+});
+
+// ========================================
+// BEFORE
+// ========================================
+
+Console.WriteLine("=== SKIP EVERYONE ELIMINATED PLAYER TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
     $"Current Player BEFORE: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Pending Draw BEFORE: {game.PendingDrawCount}");
+    $"Direction BEFORE: {game.Direction}");
 
 Console.WriteLine(
-    $"Stack Value BEFORE: {game.CurrentStackValue}");
+    $"Turn Advance BEFORE: {game.TurnAdvance}");
+
+Console.WriteLine(
+    $"Rahul Eliminated: {game.Players[1].IsEliminated}");
+
+Console.WriteLine(
+    $"Active Players: {game.Players.Count(p => !p.IsEliminated)}");
 
 Console.WriteLine();
 
-// Ashlin plays +2
-var result1 = gameService.PlayPlayerCard(
+// ========================================
+// ASHLIN PLAYS SKIP EVERYONE
+// ========================================
+
+var result = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    ashlinDrawTwo.Id);
+    skipEveryone.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS +2 ===");
+Console.WriteLine("=== ASHLIN PLAYS SKIP EVERYONE ===");
 
-Console.WriteLine($"Success: {result1.Success}");
-Console.WriteLine($"Message: {result1.Message}");
 Console.WriteLine(
-    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
-Console.WriteLine($"Pending Draw: {game.PendingDrawCount}");
-Console.WriteLine($"Stack Value: {game.CurrentStackValue}");
+    $"Success: {result.Success}");
+
+Console.WriteLine(
+    $"Message: {result.Message}");
+
+Console.WriteLine(
+    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+
+Console.WriteLine(
+    $"Direction AFTER: {game.Direction}");
+
+Console.WriteLine(
+    $"Turn Advance AFTER: {game.TurnAdvance}");
 
 Console.WriteLine();
 
-// Rahul plays equal +2
-var result2 = gameService.PlayPlayerCard(
-    game,
-    "Rahul",
-    rahulDrawTwo.Id);
-
-Console.WriteLine("=== RAHUL PLAYS EQUAL +2 ===");
-
-Console.WriteLine($"Success: {result2.Success}");
-Console.WriteLine($"Message: {result2.Message}");
-Console.WriteLine(
-    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
-Console.WriteLine($"Pending Draw: {game.PendingDrawCount}");
-Console.WriteLine($"Stack Value: {game.CurrentStackValue}");
-
-Console.WriteLine();
+// ========================================
+// EXPECTED
+// ========================================
 
 Console.WriteLine("=== EXPECTED ===");
 
-Console.WriteLine("Ashlin plays +2");
-Console.WriteLine("Pending Draw: 2");
-Console.WriteLine("Stack Value: 2");
-Console.WriteLine("Current Player: Rahul");
+Console.WriteLine("Rahul is eliminated before the card is played.");
 
 Console.WriteLine();
 
-Console.WriteLine("Rahul plays equal +2");
-Console.WriteLine("Success: True");
-Console.WriteLine("Pending Draw: 4");
-Console.WriteLine("Stack Value: 2");
-Console.WriteLine("Current Player: Arun");
+Console.WriteLine("Ashlin plays Skip Everyone.");
+
+Console.WriteLine("Rahul is ignored because he is eliminated.");
+Console.WriteLine("Arun should be skipped.");
+Console.WriteLine("Neha should be skipped.");
+
+Console.WriteLine();
+
+Console.WriteLine("Current Player AFTER: Ashlin");
+Console.WriteLine("Direction AFTER: 1");
+Console.WriteLine("Turn Advance AFTER: 1");

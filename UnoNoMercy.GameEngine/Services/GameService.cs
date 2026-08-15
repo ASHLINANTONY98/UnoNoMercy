@@ -593,16 +593,39 @@ namespace UnoNoMercy.GameEngine.Services
             if (activePlayers.Count <= 1)
                 return;
 
-            var lastHand =
-                activePlayers.Last().Hand;
+            var hands = activePlayers
+                .Select(p => p.Hand)
+                .ToList();
 
-            for (int i = activePlayers.Count - 1; i > 0; i--)
+            if (game.Direction == 1)
             {
-                activePlayers[i].Hand =
-                    activePlayers[i - 1].Hand;
-            }
+                // Clockwise
+                // Ashlin gets Rahul's hand
+                // Rahul gets Arun's hand
+                // Arun gets Ashlin's hand
 
-            activePlayers[0].Hand = lastHand;
+                for (int i = 0; i < activePlayers.Count; i++)
+                {
+                    activePlayers[i].Hand =
+                        hands[(i + 1) % activePlayers.Count];
+                }
+            }
+            else
+            {
+                // Reverse
+                // Ashlin gets Arun's hand
+                // Arun gets Rahul's hand
+                // Rahul gets Ashlin's hand
+
+                for (int i = 0; i < activePlayers.Count; i++)
+                {
+                    activePlayers[i].Hand =
+                        hands[
+                            (i - 1 + activePlayers.Count)
+                            % activePlayers.Count
+                        ];
+                }
+            }
         }
 
         private void CheckMercyRule(Game game, Player player)

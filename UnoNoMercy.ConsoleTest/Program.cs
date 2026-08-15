@@ -30,7 +30,7 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN GETS WILD DRAW SIX
+// ASHLIN GETS +6
 // ========================================
 
 var ashlinDrawSix = new Card
@@ -41,7 +41,6 @@ var ashlinDrawSix = new Card
 
 game.Players[0].Hand.Add(ashlinDrawSix);
 
-// Extra card
 game.Players[0].Hand.Add(new Card
 {
     Color = CardColor.Red,
@@ -50,18 +49,17 @@ game.Players[0].Hand.Add(new Card
 });
 
 // ========================================
-// RAHUL GETS DRAW FOUR
+// RAHUL GETS +6
 // ========================================
 
-var rahulDrawFour = new Card
+var rahulDrawSix = new Card
 {
     Color = CardColor.Wild,
-    Type = CardType.DrawFour
+    Type = CardType.WildDrawSix
 };
 
-game.Players[1].Hand.Add(rahulDrawFour);
+game.Players[1].Hand.Add(rahulDrawSix);
 
-// Extra card
 game.Players[1].Hand.Add(new Card
 {
     Color = CardColor.Blue,
@@ -84,7 +82,7 @@ game.Players[2].Hand.Add(new Card
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== INVALID LOWER DRAW STACK TEST ===");
+Console.WriteLine("=== EQUAL DRAW STACK TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
@@ -127,15 +125,15 @@ Console.WriteLine(
 Console.WriteLine();
 
 // ========================================
-// RAHUL TRIES +4
+// RAHUL PLAYS EQUAL +6
 // ========================================
 
 var result2 = gameService.PlayPlayerCard(
     game,
     "Rahul",
-    rahulDrawFour.Id);
+    rahulDrawSix.Id);
 
-Console.WriteLine("=== RAHUL TRIES +4 ===");
+Console.WriteLine("=== RAHUL PLAYS EQUAL +6 ===");
 
 Console.WriteLine(
     $"Success: {result2.Success}");
@@ -153,7 +151,7 @@ Console.WriteLine(
     $"Stack Value: {game.CurrentStackValue}");
 
 Console.WriteLine(
-    $"Rahul Hand: {game.Players[1].Hand.Count}");
+    $"Direction: {game.Direction}");
 
 Console.WriteLine();
 
@@ -170,13 +168,9 @@ Console.WriteLine("Current Player: Rahul");
 
 Console.WriteLine();
 
-Console.WriteLine("Rahul tries +4");
-
-Console.WriteLine("Success: False");
-Console.WriteLine(
-    "Message: Must stack a draw card or take 6 cards.");
-
-Console.WriteLine("Current Player: Rahul");
-Console.WriteLine("Pending Draw: 6");
+Console.WriteLine("Rahul plays equal +6");
+Console.WriteLine("Success: True");
+Console.WriteLine("Pending Draw: 12");
 Console.WriteLine("Stack Value: 6");
-Console.WriteLine("Rahul Hand: 2");
+Console.WriteLine("Current Player: Arun");
+Console.WriteLine("Direction: 1");

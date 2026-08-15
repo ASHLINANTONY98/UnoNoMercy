@@ -11,107 +11,91 @@ namespace UnoNoMercy.GameEngine.Services
 
             var colors = new[]
             {
-            CardColor.Red,
-            CardColor.Blue,
-            CardColor.Green,
-            CardColor.Yellow
-        };
+                CardColor.Red,
+                CardColor.Blue,
+                CardColor.Green,
+                CardColor.Yellow
+            };
 
             foreach (var color in colors)
             {
-                for (int i = 0; i <= 9; i++)
+                // Number cards
+                // Two copies of 0-9 for each color
+                for (int number = 0; number <= 9; number++)
                 {
-                    deck.Add(new Card
+                    for (int copy = 0; copy < 2; copy++)
                     {
-                        Color = color,
-                        Type = CardType.Number,
-                        Number = i
-                    });
+                        deck.Add(new Card
+                        {
+                            Color = color,
+                            Type = CardType.Number,
+                            Number = number
+                        });
+                    }
                 }
 
-                // Skip Cards
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.Skip
-                });
-
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.Skip
-                });
-
-                // Reverse Cards
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.Reverse
-                });
-
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.Reverse
-                });
-
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.DrawTwo
-                });
-
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.DrawTwo
-                });
-
-                deck.Add(new Card
-                {
-                    Color = color,
-                    Type = CardType.DrawTen
-                });
+                // Colored action cards
+                AddCards(deck, color, CardType.Skip, 3);
+                AddCards(deck, color, CardType.Reverse, 3);
+                AddCards(deck, color, CardType.DrawTwo, 3);
+                AddCards(deck, color, CardType.DrawFour, 2);
+                AddCards(deck, color, CardType.DiscardAll, 3);
+                AddCards(deck, color, CardType.SkipEveryone, 2);
             }
 
-            for (int i = 0; i < 4; i++)
-            {
-                deck.Add(new Card
-                {
-                    Color = CardColor.Wild,
-                    Type = CardType.Wild
-                });
-            }
+            // Wild cards
+            AddWildCards(
+                deck,
+                CardType.WildReverseDrawFour,
+                8);
 
-            for (int i = 0; i < 4; i++)
-            {
-                deck.Add(new Card
-                {
-                    Color = CardColor.Wild,
-                    Type = CardType.WildDrawFour
-                });
-            }
+            AddWildCards(
+                deck,
+                CardType.WildDrawSix,
+                4);
 
-            for (int i = 0; i < 4; i++)
-            {
-                deck.Add(new Card
-                {
-                    Color = CardColor.Wild,
-                    Type = CardType.WildDrawSix
-                });
-            }
+            AddWildCards(
+                deck,
+                CardType.WildDrawTen,
+                4);
 
-            for (int i = 0; i < 4; i++)
-            {
-                deck.Add(new Card
-                {
-                    Color = CardColor.Wild,
-                    Type = CardType.WildReverseDrawFour
-                });
-            }
-
+            AddWildCards(
+                deck,
+                CardType.WildColorRoulette,
+                8);
 
             return deck;
+        }
+
+        private void AddCards(
+            List<Card> deck,
+            CardColor color,
+            CardType type,
+            int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                deck.Add(new Card
+                {
+                    Color = color,
+                    Type = type
+                });
+            }
+        }
+
+        private void AddWildCards(
+            List<Card> deck,
+            CardType type,
+            int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                deck.Add(new Card
+                {
+                    Color = CardColor.Wild,
+                    Type = type
+                });
+            }
         }
 
         public void Shuffle(List<Card> deck)
@@ -127,10 +111,8 @@ namespace UnoNoMercy.GameEngine.Services
                 int k = rng.Next(n + 1);
 
                 (deck[n], deck[k]) =
-                (deck[k], deck[n]);
+                    (deck[k], deck[n]);
             }
-
-
         }
     }
 }

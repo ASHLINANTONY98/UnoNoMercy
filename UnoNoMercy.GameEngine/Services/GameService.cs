@@ -418,7 +418,7 @@ namespace UnoNoMercy.GameEngine.Services
                         break;
                     }
 
-                case CardType.WildDrawFour:
+                case CardType.WildReverseDrawFour:
                     {
                         game.ActiveColor =
                             GetBestColor(player);
@@ -462,7 +462,7 @@ namespace UnoNoMercy.GameEngine.Services
                         break;
                     }
 
-                case CardType.DrawTen:
+                case CardType.WildDrawTen:
                     {
                         game.PendingDrawCount += 10;
                         game.CurrentStackValue = 10;
@@ -474,33 +474,6 @@ namespace UnoNoMercy.GameEngine.Services
 
                         Console.WriteLine(
                             $"💀 Draw penalty = {game.PendingDrawCount}");
-
-                        break;
-                    }
-
-                case CardType.WildReverseDrawFour:
-                    {
-                        game.ActiveColor =
-                            GetBestColor(player);
-
-                        game.Direction *= -1;
-
-                        game.PendingDrawCount += 4;
-                        game.CurrentStackValue = 4;
-
-                        game.LargestStack =
-                            Math.Max(
-                                game.LargestStack,
-                                game.PendingDrawCount);
-
-                        Console.WriteLine(
-                            "🔄 Reverse activated!");
-
-                        Console.WriteLine(
-                            $"🔥 Draw penalty = {game.PendingDrawCount}");
-
-                        Console.WriteLine(
-                            $"🌈 Wild Reverse Draw Four! Color changed to {game.ActiveColor}");
 
                         break;
                     }
@@ -574,10 +547,10 @@ namespace UnoNoMercy.GameEngine.Services
             return card.Type switch
             {
                 CardType.DrawTwo => 2,
-                CardType.WildDrawFour => 4,
+                CardType.DrawFour => 4,
                 CardType.WildReverseDrawFour => 4,
                 CardType.WildDrawSix => 6,
-                CardType.DrawTen => 10,
+                CardType.WildDrawTen => 10,
                 _ => 0
             };
         }

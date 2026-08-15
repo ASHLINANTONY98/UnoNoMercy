@@ -3,13 +3,20 @@
     public enum CardType
     {
         Number,
+
+        // Colored Action Cards
         Skip,
         Reverse,
         DrawTwo,
+        DrawFour,
+        DiscardAll,
+        SkipEveryone,
+
+        // Wild Cards
         Wild,
-        WildDrawFour,
-        DrawTen,
+        WildReverseDrawFour,
         WildDrawSix,
-        WildReverseDrawFour
+        WildDrawTen,
+        WildColorRoulette
     }
 }

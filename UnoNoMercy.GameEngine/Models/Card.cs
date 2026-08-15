@@ -8,29 +8,36 @@ namespace UnoNoMercy.GameEngine.Models
             = Guid.NewGuid().ToString();
 
         public CardColor Color { get; set; }
+
         public CardType Type { get; set; }
+
         public int? Number { get; set; }
+
         public override string ToString()
         {
             if (Type == CardType.Number)
                 return $"{Color} {Number}";
- 
-            if (Type == CardType.WildDrawFour)
-                return "Wild Draw Four";
 
-            if (Type == CardType.Wild)
-                return "Wild";
+            return Type switch
+            {
+                CardType.Wild =>
+                    "Wild",
 
-            if (Type == CardType.WildDrawSix)
-                return "Wild Draw Six";
+                CardType.WildReverseDrawFour =>
+                    "Wild Reverse Draw Four",
 
-            if (Type == CardType.DrawTen)
-                return $"{Color} Draw Ten";
+                CardType.WildDrawSix =>
+                    "Wild Draw Six",
 
-            if (Type == CardType.WildReverseDrawFour)
-                return "Wild Reverse Draw Four";
+                CardType.WildDrawTen =>
+                    "Wild Draw Ten",
 
-            return $"{Color} {Type}";
+                CardType.WildColorRoulette =>
+                    "Wild Color Roulette",
+
+                _ =>
+                    $"{Color} {Type}"
+            };
         }
     }
 }

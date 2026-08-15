@@ -15,7 +15,10 @@ var game = new Game
 };
 
 game.CurrentPlayerIndex = 0;
-game.Direction = 1;
+
+// REVERSE direction
+game.Direction = -1;
+
 game.HasStarted = true;
 
 // ========================================
@@ -30,154 +33,89 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN GETS NORMAL WILD
+// ASHLIN GETS RED SKIP EVERYONE
 // ========================================
 
-var wildCard = new Card
+var skipEveryone = new Card
 {
-    Color = CardColor.Wild,
-    Type = CardType.Wild
+    Color = CardColor.Red,
+    Type = CardType.SkipEveryone
 };
 
-game.Players[0].Hand.Add(wildCard);
+game.Players[0].Hand.Add(skipEveryone);
 
 // Extra card so Ashlin doesn't win
 game.Players[0].Hand.Add(new Card
-{
-    Color = CardColor.Red,
-    Type = CardType.Number,
-    Number = 8
-});
-
-// Rahul gets a card
-game.Players[1].Hand.Add(new Card
 {
     Color = CardColor.Blue,
     Type = CardType.Number,
     Number = 2
 });
 
-// Arun gets a card
-game.Players[2].Hand.Add(new Card
-{
-    Color = CardColor.Green,
-    Type = CardType.Number,
-    Number = 7
-});
-
 // ========================================
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== WILD WRONG PLAYER TEST ===");
+Console.WriteLine("=== SKIP EVERYONE REVERSE TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
     $"Current Player BEFORE: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Active Color BEFORE: {game.ActiveColor}");
+    $"Direction BEFORE: {game.Direction}");
+
+Console.WriteLine(
+    $"Turn Advance BEFORE: {game.TurnAdvance}");
 
 Console.WriteLine();
 
 // ========================================
-// ASHLIN PLAYS WILD
+// ASHLIN PLAYS SKIP EVERYONE
 // ========================================
 
-var result1 = gameService.PlayPlayerCard(
+var result = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    wildCard.Id);
+    skipEveryone.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS WILD ===");
-
-Console.WriteLine(
-    $"Success: {result1.Success}");
+Console.WriteLine("=== ASHLIN PLAYS SKIP EVERYONE ===");
 
 Console.WriteLine(
-    $"Message: {result1.Message}");
+    $"Success: {result.Success}");
 
 Console.WriteLine(
-    $"Current Player AFTER PLAY: {gameService.GetCurrentPlayer(game).Name}");
+    $"Message: {result.Message}");
 
 Console.WriteLine(
-    $"Active Color AFTER PLAY: {game.ActiveColor}");
+    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+
+Console.WriteLine(
+    $"Direction AFTER: {game.Direction}");
+
+Console.WriteLine(
+    $"Turn Advance AFTER: {game.TurnAdvance}");
 
 Console.WriteLine();
 
-// ========================================
-// ARUN TRIES TO CHOOSE BLUE
-// ========================================
-
-var result2 = gameService.ChooseWildColor(
-    game,
-    "Arun",
-    CardColor.Blue);
-
-Console.WriteLine("=== ARUN TRIES TO CHOOSE BLUE ===");
-
-Console.WriteLine(
-    $"Success: {result2.Success}");
-
-Console.WriteLine(
-    $"Message: {result2.Message}");
-
-Console.WriteLine(
-    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
-
-Console.WriteLine(
-    $"Active Color: {game.ActiveColor}");
-
-Console.WriteLine();
-
-// ========================================
-// RAHUL CHOOSES BLUE
-// ========================================
-
-var result3 = gameService.ChooseWildColor(
-    game,
-    "Rahul",
-    CardColor.Blue);
-
-Console.WriteLine("=== RAHUL CHOOSES BLUE ===");
-
-Console.WriteLine(
-    $"Success: {result3.Success}");
-
-Console.WriteLine(
-    $"Message: {result3.Message}");
-
-Console.WriteLine(
-    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
-
-Console.WriteLine(
-    $"Active Color: {game.ActiveColor}");
-
-Console.WriteLine();
 
 // ========================================
 // EXPECTED
 // ========================================
 
 Console.WriteLine("=== EXPECTED ===");
-Console.WriteLine();
 
-Console.WriteLine("Ashlin plays Wild");
-Console.WriteLine("Current Player AFTER PLAY: Rahul");
-Console.WriteLine("Active Color AFTER PLAY:");
+Console.WriteLine("Before: Ashlin");
+Console.WriteLine("Direction BEFORE: -1");
 
 Console.WriteLine();
 
-Console.WriteLine("Arun tries to choose Blue");
-Console.WriteLine("Success: False");
-Console.WriteLine("Message: Not your turn.");
-Console.WriteLine("Current Player: Rahul");
-Console.WriteLine("Active Color:");
+Console.WriteLine("Ashlin plays Skip Everyone");
+Console.WriteLine("Arun should be skipped");
+Console.WriteLine("Rahul should be skipped");
 
 Console.WriteLine();
 
-Console.WriteLine("Rahul chooses Blue");
-Console.WriteLine("Success: True");
-Console.WriteLine("Message: Wild color changed to Blue.");
-Console.WriteLine("Current Player: Rahul");
-Console.WriteLine("Active Color: Blue");
+Console.WriteLine("After: Ashlin");
+Console.WriteLine("Direction AFTER: -1");
+Console.WriteLine("Turn Advance AFTER: 1");

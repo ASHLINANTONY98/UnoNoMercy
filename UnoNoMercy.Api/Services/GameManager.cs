@@ -6,5 +6,8 @@ namespace UnoNoMercy.Api.Services
     {
         public Dictionary<Guid, Game> Games { get; }
             = new();
+
+        public Dictionary<string, string> PlayerConnections { get; }
+            = new();
     }
 }

@@ -218,7 +218,8 @@ namespace UnoNoMercy.GameEngine.Services
                     ProcessSpecialCard(
                         game,
                         player,
-                        stackCard);
+                        stackCard,
+                        null);
 
                     if (playedLastCard && game.PendingDrawCount == 0)
                     {
@@ -286,7 +287,8 @@ namespace UnoNoMercy.GameEngine.Services
                 ProcessSpecialCard(
                     game,
                     player,
-                    playableCard);
+                    playableCard,
+                    null);
 
                 if (playedLastCard && game.PendingDrawCount == 0)
                 {
@@ -344,26 +346,43 @@ namespace UnoNoMercy.GameEngine.Services
         private void ProcessSpecialCard(
             Game game,
             Player player,
-            Card card)
+            Card card,
+            string? targetPlayerName)
         {
             if (card.Type == CardType.Number)
             {
                 if (card.Number == 7)
                 {
-                    var targetPlayer =
-                        GetPlayerWithMostCards(game);
-
-                    if (targetPlayer != player)
+                    if (string.IsNullOrWhiteSpace(targetPlayerName))
                     {
-                        var tempHand = player.Hand;
-
-                        player.Hand = targetPlayer.Hand;
-
-                        targetPlayer.Hand = tempHand;
-
                         Console.WriteLine(
-                            $"🔄 {player.Name} swapped hands with {targetPlayer.Name}!");
+                            $"🔄 {player.Name} played 7 but no swap target was selected.");
+
+                        return;
                     }
+
+                    var targetPlayer = game.Players
+                        .FirstOrDefault(p =>
+                            p.Name == targetPlayerName &&
+                            p != player &&
+                            !p.IsEliminated);
+
+                    if (targetPlayer == null)
+                    {
+                        Console.WriteLine(
+                            $"🔄 Invalid swap target: {targetPlayerName}");
+
+                        return;
+                    }
+
+                    var tempHand = player.Hand;
+
+                    player.Hand = targetPlayer.Hand;
+
+                    targetPlayer.Hand = tempHand;
+
+                    Console.WriteLine(
+                        $"🔄 {player.Name} swapped hands with {targetPlayer.Name}!");
                 }
 
                 if (card.Number == 0)
@@ -675,7 +694,8 @@ namespace UnoNoMercy.GameEngine.Services
         public PlayCardResponse PlayPlayerCard(
             Game game,
             string playerName,
-            string cardId)
+            string cardId,
+            string? targetPlayerName = null)
         {
             if (!game.HasStarted)
             {
@@ -754,7 +774,8 @@ namespace UnoNoMercy.GameEngine.Services
             ProcessSpecialCard(
                 game,
                 player,
-                card);
+                card,
+                targetPlayerName);
 
             if (playedLastCard &&
                 game.PendingDrawCount == 0)

@@ -15,7 +15,7 @@ var game = new Game
 };
 
 game.CurrentPlayerIndex = 0;
-game.Direction = 1;
+game.Direction = -1;
 game.HasStarted = true;
 
 // ========================================
@@ -30,100 +30,99 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN'S HAND
+// ASHLIN HAND = 3
 // ========================================
 
-// Red cards
-var redTwo = new Card
+var ashlinSeven = new Card
 {
     Color = CardColor.Red,
-    Type = CardType.Number,
-    Number = 2
-};
-
-var redFive = new Card
-{
-    Color = CardColor.Red,
-    Type = CardType.Number,
-    Number = 5
-};
-
-var redSkip = new Card
-{
-    Color = CardColor.Red,
-    Type = CardType.Skip
-};
-
-var redEight = new Card
-{
-    Color = CardColor.Red,
-    Type = CardType.Number,
-    Number = 8
-};
-
-var redDiscardAll = new Card
-{
-    Color = CardColor.Red,
-    Type = CardType.DiscardAll
-};
-
-// Different colors
-var blueThree = new Card
-{
-    Color = CardColor.Blue,
-    Type = CardType.Number,
-    Number = 3
-};
-
-var greenSeven = new Card
-{
-    Color = CardColor.Green,
     Type = CardType.Number,
     Number = 7
 };
 
-game.Players[0].Hand.Add(redTwo);
-game.Players[0].Hand.Add(redFive);
-game.Players[0].Hand.Add(redSkip);
-game.Players[0].Hand.Add(redEight);
-game.Players[0].Hand.Add(redDiscardAll);
-game.Players[0].Hand.Add(blueThree);
-game.Players[0].Hand.Add(greenSeven);
+game.Players[0].Hand.Add(ashlinSeven);
+
+game.Players[0].Hand.Add(new Card
+{
+    Color = CardColor.Blue,
+    Type = CardType.Number,
+    Number = 2
+});
+
+game.Players[0].Hand.Add(new Card
+{
+    Color = CardColor.Green,
+    Type = CardType.Number,
+    Number = 4
+});
+
+// ========================================
+// RAHUL HAND = 4
+// ========================================
+
+for (int i = 1; i <= 4; i++)
+{
+    game.Players[1].Hand.Add(new Card
+    {
+        Color = CardColor.Blue,
+        Type = CardType.Number,
+        Number = i
+    });
+}
+
+// ========================================
+// ARUN HAND = 2
+// ========================================
+
+game.Players[2].Hand.Add(new Card
+{
+    Color = CardColor.Yellow,
+    Type = CardType.Number,
+    Number = 8
+});
+
+game.Players[2].Hand.Add(new Card
+{
+    Color = CardColor.Green,
+    Type = CardType.Number,
+    Number = 9
+});
 
 // ========================================
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== DISCARD ALL EDGE TEST ===");
+Console.WriteLine("=== 7 SWAP TARGET TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
     $"Current Player BEFORE: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Hand BEFORE: {game.Players[0].Hand.Count}");
+    $"Direction BEFORE: {game.Direction}");
 
-Console.WriteLine();
+Console.WriteLine(
+    $"Ashlin cards BEFORE: {game.Players[0].Hand.Count}");
 
-Console.WriteLine("Hand BEFORE:");
+Console.WriteLine(
+    $"Rahul cards BEFORE: {game.Players[1].Hand.Count}");
 
-foreach (var card in game.Players[0].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
+Console.WriteLine(
+    $"Arun cards BEFORE: {game.Players[2].Hand.Count}");
 
 Console.WriteLine();
 
 // ========================================
-// PLAY RED DISCARD ALL
+// ASHLIN PLAYS 7 AND CHOOSES ARUN
 // ========================================
 
 var result = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    redDiscardAll.Id);
+    ashlinSeven.Id,
+    "Arun");
 
-Console.WriteLine("=== ASHLIN PLAYS RED DISCARD ALL ===");
+Console.WriteLine("=== ASHLIN PLAYS RED 7 ===");
 
 Console.WriteLine(
     $"Success: {result.Success}");
@@ -133,15 +132,13 @@ Console.WriteLine(
 
 Console.WriteLine();
 
-Console.WriteLine(
-    $"Hand AFTER: {game.Players[0].Hand.Count}");
-
-Console.WriteLine(
-    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+Console.WriteLine($"Ashlin cards AFTER: {game.Players[0].Hand.Count}");
+Console.WriteLine($"Rahul cards AFTER: {game.Players[1].Hand.Count}");
+Console.WriteLine($"Arun cards AFTER: {game.Players[2].Hand.Count}");
 
 Console.WriteLine();
 
-Console.WriteLine("Remaining cards:");
+Console.WriteLine("=== ASHLIN HAND AFTER ===");
 
 foreach (var card in game.Players[0].Hand)
 {
@@ -150,33 +147,64 @@ foreach (var card in game.Players[0].Hand)
 
 Console.WriteLine();
 
-// ========================================
-// EXPECTED
-// ========================================
+Console.WriteLine("=== RAHUL HAND AFTER ===");
+
+foreach (var card in game.Players[1].Hand)
+{
+    Console.WriteLine($"- {card}");
+}
+
+Console.WriteLine();
+
+Console.WriteLine("=== ARUN HAND AFTER ===");
+
+foreach (var card in game.Players[2].Hand)
+{
+    Console.WriteLine($"- {card}");
+}
+
+Console.WriteLine();
+
+Console.WriteLine(
+    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+
+Console.WriteLine(
+    $"Direction AFTER: {game.Direction}");
+
+Console.WriteLine();
 
 Console.WriteLine("=== EXPECTED ===");
 
-Console.WriteLine("Hand BEFORE: 7");
+Console.WriteLine("Ashlin played Red 7 and chose Arun.");
 
 Console.WriteLine();
 
-Console.WriteLine("Red cards before:");
-Console.WriteLine("Red 2");
-Console.WriteLine("Red 5");
-Console.WriteLine("Red Skip");
-Console.WriteLine("Red 8");
-Console.WriteLine("Red Discard All");
+Console.WriteLine("Ashlin should now have Arun's original hand:");
+Console.WriteLine("- Yellow 8");
+Console.WriteLine("- Green 9");
 
 Console.WriteLine();
 
-Console.WriteLine("After Discard All:");
-
-Console.WriteLine("All Red cards should be removed.");
-
-Console.WriteLine("Blue 3 should remain.");
-Console.WriteLine("Green 7 should remain.");
+Console.WriteLine("Rahul should be unchanged:");
+Console.WriteLine("- Blue 1");
+Console.WriteLine("- Blue 2");
+Console.WriteLine("- Blue 3");
+Console.WriteLine("- Blue 4");
 
 Console.WriteLine();
 
-Console.WriteLine("Hand AFTER: 2");
-Console.WriteLine("Current Player AFTER: Rahul");
+Console.WriteLine("Arun should now have Ashlin's remaining hand:");
+Console.WriteLine("- Blue 2");
+Console.WriteLine("- Green 4");
+
+Console.WriteLine();
+
+Console.WriteLine("Expected counts:");
+Console.WriteLine("Ashlin: 2");
+Console.WriteLine("Rahul: 4");
+Console.WriteLine("Arun: 2");
+
+Console.WriteLine();
+
+Console.WriteLine("Current Player AFTER: Arun");
+Console.WriteLine("Direction AFTER: -1");

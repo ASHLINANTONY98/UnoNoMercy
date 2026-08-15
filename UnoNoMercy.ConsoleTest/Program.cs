@@ -9,13 +9,12 @@ var game = new Game
     Players =
     {
         new Player { Name = "Ashlin" },
-        new Player { Name = "Rahul" },
-        new Player { Name = "Arun" }
+        new Player { Name = "Rahul" }
     }
 };
 
 game.CurrentPlayerIndex = 0;
-game.Direction = -1;
+game.Direction = 1;
 game.HasStarted = true;
 
 // ========================================
@@ -30,18 +29,18 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN HAND
+// ASHLIN GETS RED REVERSE
 // ========================================
 
-var ashlinZero = new Card
+var ashlinReverse = new Card
 {
     Color = CardColor.Red,
-    Type = CardType.Number,
-    Number = 0
+    Type = CardType.Reverse
 };
 
-game.Players[0].Hand.Add(ashlinZero);
+game.Players[0].Hand.Add(ashlinReverse);
 
+// Extra card so Ashlin doesn't win
 game.Players[0].Hand.Add(new Card
 {
     Color = CardColor.Blue,
@@ -50,9 +49,18 @@ game.Players[0].Hand.Add(new Card
 });
 
 // ========================================
-// RAHUL HAND
+// RAHUL GETS BLUE REVERSE
 // ========================================
 
+var rahulReverse = new Card
+{
+    Color = CardColor.Blue,
+    Type = CardType.Reverse
+};
+
+game.Players[1].Hand.Add(rahulReverse);
+
+// Extra card so Rahul doesn't win
 game.Players[1].Hand.Add(new Card
 {
     Color = CardColor.Green,
@@ -60,43 +68,11 @@ game.Players[1].Hand.Add(new Card
     Number = 3
 });
 
-game.Players[1].Hand.Add(new Card
-{
-    Color = CardColor.Green,
-    Type = CardType.Number,
-    Number = 4
-});
-
-// ========================================
-// ARUN HAND
-// ========================================
-
-game.Players[2].Hand.Add(new Card
-{
-    Color = CardColor.Yellow,
-    Type = CardType.Number,
-    Number = 8
-});
-
-game.Players[2].Hand.Add(new Card
-{
-    Color = CardColor.Yellow,
-    Type = CardType.Number,
-    Number = 9
-});
-
-game.Players[2].Hand.Add(new Card
-{
-    Color = CardColor.Yellow,
-    Type = CardType.Number,
-    Number = 1
-});
-
 // ========================================
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== 0 PASS REVERSE TEST ===");
+Console.WriteLine("=== 2 PLAYER REVERSE TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
@@ -107,76 +83,22 @@ Console.WriteLine(
 
 Console.WriteLine();
 
-Console.WriteLine("=== HANDS BEFORE ===");
-
-Console.WriteLine("Ashlin:");
-foreach (var card in game.Players[0].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
-
-Console.WriteLine();
-
-Console.WriteLine("Rahul:");
-foreach (var card in game.Players[1].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
-
-Console.WriteLine();
-
-Console.WriteLine("Arun:");
-foreach (var card in game.Players[2].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
-
-Console.WriteLine();
-
 // ========================================
-// ASHLIN PLAYS 0
+// ASHLIN PLAYS REVERSE
 // ========================================
 
-var result = gameService.PlayPlayerCard(
+var result1 = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    ashlinZero.Id);
+    ashlinReverse.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS RED 0 ===");
-
-Console.WriteLine(
-    $"Success: {result.Success}");
+Console.WriteLine("=== ASHLIN PLAYS REVERSE ===");
 
 Console.WriteLine(
-    $"Message: {result.Message}");
+    $"Success: {result1.Success}");
 
-Console.WriteLine();
-
-Console.WriteLine("=== HANDS AFTER ===");
-
-Console.WriteLine("Ashlin:");
-foreach (var card in game.Players[0].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
-
-Console.WriteLine();
-
-Console.WriteLine("Rahul:");
-foreach (var card in game.Players[1].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
-
-Console.WriteLine();
-
-Console.WriteLine("Arun:");
-foreach (var card in game.Players[2].Hand)
-{
-    Console.WriteLine($"- {card}");
-}
-
-Console.WriteLine();
+Console.WriteLine(
+    $"Message: {result1.Message}");
 
 Console.WriteLine(
     $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
@@ -187,40 +109,50 @@ Console.WriteLine(
 Console.WriteLine();
 
 // ========================================
-// EXPECTED FOR REVERSE DIRECTION
+// RAHUL PLAYS REVERSE
 // ========================================
 
-Console.WriteLine("=== EXPECTED FOR DIRECTION -1 ===");
+var result2 = gameService.PlayPlayerCard(
+    game,
+    "Rahul",
+    rahulReverse.Id);
 
-Console.WriteLine("Ashlin plays Red 0.");
+Console.WriteLine("=== RAHUL PLAYS REVERSE ===");
 
-Console.WriteLine();
+Console.WriteLine(
+    $"Success: {result2.Success}");
 
-Console.WriteLine("Reverse rotation should be:");
+Console.WriteLine(
+    $"Message: {result2.Message}");
 
-Console.WriteLine("Ashlin gets Arun's original hand.");
-Console.WriteLine("Arun gets Rahul's original hand.");
-Console.WriteLine("Rahul gets Ashlin's remaining hand.");
+Console.WriteLine(
+    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
 
-Console.WriteLine();
-
-Console.WriteLine("Ashlin AFTER:");
-Console.WriteLine("- Yellow 8");
-Console.WriteLine("- Yellow 9");
-Console.WriteLine("- Yellow 1");
-
-Console.WriteLine();
-
-Console.WriteLine("Rahul AFTER:");
-Console.WriteLine("- Blue 2");
+Console.WriteLine(
+    $"Direction AFTER: {game.Direction}");
 
 Console.WriteLine();
 
-Console.WriteLine("Arun AFTER:");
-Console.WriteLine("- Green 3");
-Console.WriteLine("- Green 4");
+// ========================================
+// EXPECTED
+// ========================================
+
+Console.WriteLine("=== EXPECTED ===");
 
 Console.WriteLine();
 
-Console.WriteLine("Current Player AFTER: Arun");
+Console.WriteLine("1. Before");
+Console.WriteLine("Current Player: Ashlin");
+Console.WriteLine("Direction: 1");
+
+Console.WriteLine();
+
+Console.WriteLine("2. Ashlin plays Reverse");
 Console.WriteLine("Direction AFTER: -1");
+Console.WriteLine("Current Player AFTER: Rahul");
+
+Console.WriteLine();
+
+Console.WriteLine("3. Rahul plays Reverse");
+Console.WriteLine("Direction AFTER: 1");
+Console.WriteLine("Current Player AFTER: Ashlin");

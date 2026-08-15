@@ -71,18 +71,23 @@ namespace UnoNoMercy.GameEngine.Services
 
         public void NextTurn(Game game)
         {
-            game.CurrentPlayerIndex += game.Direction;
-
-            if (game.CurrentPlayerIndex >= game.Players.Count)
+            for (int i = 0; i < game.TurnAdvance; i++)
             {
-                game.CurrentPlayerIndex = 0;
+                game.CurrentPlayerIndex += game.Direction;
+
+                if (game.CurrentPlayerIndex >= game.Players.Count)
+                {
+                    game.CurrentPlayerIndex = 0;
+                }
+
+                if (game.CurrentPlayerIndex < 0)
+                {
+                    game.CurrentPlayerIndex =
+                        game.Players.Count - 1;
+                }
             }
 
-            if (game.CurrentPlayerIndex < 0)
-            {
-                game.CurrentPlayerIndex =
-                    game.Players.Count - 1;
-            }
+            game.TurnAdvance = 1;
         }
 
         public bool PlayCard(
@@ -373,7 +378,7 @@ namespace UnoNoMercy.GameEngine.Services
             {
                 case CardType.Skip:
                     {
-                        NextTurn(game);
+                        game.TurnAdvance = 2;
 
                         Console.WriteLine(
                             "⏭ Skip card activated!");
@@ -436,6 +441,8 @@ namespace UnoNoMercy.GameEngine.Services
 
                 case CardType.WildReverseDrawFour:
                     {
+                        game.Direction *= -1;
+
                         game.ActiveColor =
                             GetBestColor(player);
 
@@ -448,10 +455,13 @@ namespace UnoNoMercy.GameEngine.Services
                                 game.PendingDrawCount);
 
                         Console.WriteLine(
+                            $"🔄 Wild Reverse Draw 4! Direction reversed.");
+
+                        Console.WriteLine(
                             $"🔥 Draw penalty = {game.PendingDrawCount}");
 
                         Console.WriteLine(
-                            $"🌈 Wild Draw Four! Color changed to {game.ActiveColor}");
+                            $"🌈 Color changed to {game.ActiveColor}");
 
                         break;
                     }

@@ -35,5 +35,7 @@ namespace UnoNoMercy.GameEngine.Models
         public string RoomCode { get; set; } = string.Empty;
 
         public bool HasStarted { get; set; } = false;
+
+        public int TurnAdvance { get; set; } = 1;
     }
 }

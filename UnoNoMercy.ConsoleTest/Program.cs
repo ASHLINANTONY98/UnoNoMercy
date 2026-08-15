@@ -2,70 +2,86 @@
 using UnoNoMercy.GameEngine.Models;
 using UnoNoMercy.GameEngine.Services;
 
-var deckService = new DeckService();
-
-var deck = deckService.CreateDeck();
-
-deckService.Shuffle(deck);
+var gameService = new GameService();
 
 var game = new Game
 {
-    Deck = deck,
     Players =
     {
         new Player { Name = "Ashlin" },
         new Player { Name = "Rahul" },
-        new Player { Name = "Arun" },
-        new Player { Name = "Vishnu" }
+        new Player { Name = "Arun" }
     }
 };
 
-var gameService = new GameService();
+// Ashlin is the current player
+game.CurrentPlayerIndex = 0;
 
-gameService.DealCards(game);
+// Normal clockwise direction
+game.Direction = 1;
+game.HasStarted = true;
 
-Card startingCard;
-
-while (true)
+// Top card
+game.DiscardPile.Add(new Card
 {
-    startingCard = gameService.DrawCard(game);
+    Color = CardColor.Red,
+    Type = CardType.Number,
+    Number = 5
+});
 
-    if (startingCard.Type == CardType.Number)
-    {
-        game.DiscardPile.Add(startingCard);
-        break;
-    }
-
-    game.Deck.Add(startingCard);
-
-    deckService.Shuffle(game.Deck);
-}
-
-Console.WriteLine($"Starting Card: {startingCard}");
-
-Console.WriteLine();
-
-Console.WriteLine("=== GAME STARTED ===");
-Console.WriteLine();
-
-var state = gameService.GetGameState(game);
-
-Console.WriteLine(
-    $"Current Player: {state.CurrentPlayer}");
-
-Console.WriteLine(
-    $"Top Card: {state.TopCard}");
-
-Console.WriteLine(
-    $"Pending Draw: {state.PendingDrawCount}");
-
-Console.WriteLine();
-
-while (true)
+// Give Ashlin a Red Skip
+var skipCard = new Card
 {
-    bool continueGame =
-        gameService.TakeTurn(game);
+    Color = CardColor.Red,
+    Type = CardType.Skip
+};
 
-    if (!continueGame)
-        break;
-}
+game.Players[0].Hand.Add(skipCard);
+
+game.Players[0].Hand.Add(new Card
+{
+    Color = CardColor.Blue,
+    Type = CardType.Number,
+    Number = 5
+});
+
+Console.WriteLine("=== SKIP TEST ===");
+Console.WriteLine();
+
+Console.WriteLine(
+    $"Current Player BEFORE: {gameService.GetCurrentPlayer(game).Name}");
+
+Console.WriteLine(
+    $"Top Card: {gameService.GetTopCard(game)}");
+
+Console.WriteLine();
+
+var result = gameService.PlayPlayerCard(
+    game,
+    "Ashlin",
+    skipCard.Id);
+
+Console.WriteLine(
+    $"Play Result: {result.Success}");
+
+Console.WriteLine(
+    $"Message: {result.Message}");
+
+Console.WriteLine();
+
+Console.WriteLine(
+    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+
+Console.WriteLine(
+    $"Direction: {game.Direction}");
+
+Console.WriteLine(
+    $"Turn Advance: {game.TurnAdvance}");
+
+Console.WriteLine();
+
+Console.WriteLine("=== EXPECTED ===");
+Console.WriteLine("Before: Ashlin");
+Console.WriteLine("Ashlin plays Skip");
+Console.WriteLine("Rahul should be skipped");
+Console.WriteLine("After: Arun");

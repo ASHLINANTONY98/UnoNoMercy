@@ -30,42 +30,43 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN GETS RED +2
+// ASHLIN GETS WILD DRAW SIX
 // ========================================
 
-var ashlinDrawTwo = new Card
+var ashlinDrawSix = new Card
 {
-    Color = CardColor.Red,
-    Type = CardType.DrawTwo
+    Color = CardColor.Wild,
+    Type = CardType.WildDrawSix
 };
 
-game.Players[0].Hand.Add(ashlinDrawTwo);
+game.Players[0].Hand.Add(ashlinDrawSix);
 
+// Extra card
 game.Players[0].Hand.Add(new Card
 {
-    Color = CardColor.Blue,
+    Color = CardColor.Red,
     Type = CardType.Number,
     Number = 2
 });
 
 // ========================================
-// RAHUL GETS NORMAL CARD
+// RAHUL GETS DRAW FOUR
 // ========================================
 
-var rahulNormal = new Card
+var rahulDrawFour = new Card
+{
+    Color = CardColor.Wild,
+    Type = CardType.DrawFour
+};
+
+game.Players[1].Hand.Add(rahulDrawFour);
+
+// Extra card
+game.Players[1].Hand.Add(new Card
 {
     Color = CardColor.Blue,
     Type = CardType.Number,
     Number = 7
-};
-
-game.Players[1].Hand.Add(rahulNormal);
-
-game.Players[1].Hand.Add(new Card
-{
-    Color = CardColor.Green,
-    Type = CardType.Number,
-    Number = 4
 });
 
 // ========================================
@@ -74,16 +75,16 @@ game.Players[1].Hand.Add(new Card
 
 game.Players[2].Hand.Add(new Card
 {
-    Color = CardColor.Yellow,
+    Color = CardColor.Green,
     Type = CardType.Number,
-    Number = 9
+    Number = 3
 });
 
 // ========================================
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== INVALID DRAW TWO STACKING TEST ===");
+Console.WriteLine("=== INVALID LOWER DRAW STACK TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
@@ -95,21 +96,18 @@ Console.WriteLine(
 Console.WriteLine(
     $"Stack Value BEFORE: {game.CurrentStackValue}");
 
-Console.WriteLine(
-    $"Rahul Hand BEFORE: {game.Players[1].Hand.Count}");
-
 Console.WriteLine();
 
 // ========================================
-// ASHLIN PLAYS +2
+// ASHLIN PLAYS +6
 // ========================================
 
 var result1 = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    ashlinDrawTwo.Id);
+    ashlinDrawSix.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS +2 ===");
+Console.WriteLine("=== ASHLIN PLAYS +6 ===");
 
 Console.WriteLine(
     $"Success: {result1.Success}");
@@ -129,15 +127,15 @@ Console.WriteLine(
 Console.WriteLine();
 
 // ========================================
-// RAHUL TRIES NORMAL CARD
+// RAHUL TRIES +4
 // ========================================
 
 var result2 = gameService.PlayPlayerCard(
     game,
     "Rahul",
-    rahulNormal.Id);
+    rahulDrawFour.Id);
 
-Console.WriteLine("=== RAHUL TRIES NORMAL CARD ===");
+Console.WriteLine("=== RAHUL TRIES +4 ===");
 
 Console.WriteLine(
     $"Success: {result2.Success}");
@@ -165,20 +163,20 @@ Console.WriteLine();
 
 Console.WriteLine("=== EXPECTED ===");
 
-Console.WriteLine("Ashlin plays +2");
-Console.WriteLine("Pending Draw: 2");
-Console.WriteLine("Stack Value: 2");
+Console.WriteLine("Ashlin plays +6");
+Console.WriteLine("Pending Draw: 6");
+Console.WriteLine("Stack Value: 6");
 Console.WriteLine("Current Player: Rahul");
 
 Console.WriteLine();
 
-Console.WriteLine("Rahul tries normal card");
+Console.WriteLine("Rahul tries +4");
 
 Console.WriteLine("Success: False");
 Console.WriteLine(
-    "Message: Must stack a draw card or take 2 cards.");
+    "Message: Must stack a draw card or take 6 cards.");
 
 Console.WriteLine("Current Player: Rahul");
-Console.WriteLine("Pending Draw: 2");
-Console.WriteLine("Stack Value: 2");
+Console.WriteLine("Pending Draw: 6");
+Console.WriteLine("Stack Value: 6");
 Console.WriteLine("Rahul Hand: 2");

@@ -10,8 +10,7 @@ var game = new Game
     {
         new Player { Name = "Ashlin" },
         new Player { Name = "Rahul" },
-        new Player { Name = "Arun" },
-        new Player { Name = "Neha" }
+        new Player { Name = "Arun" }
     }
 };
 
@@ -37,16 +36,17 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN GETS SKIP EVERYONE
+// ASHLIN NORMAL CARD
 // ========================================
 
-var skipEveryone = new Card
+var ashlinCard = new Card
 {
     Color = CardColor.Red,
-    Type = CardType.SkipEveryone
+    Type = CardType.Number,
+    Number = 8
 };
 
-game.Players[0].Hand.Add(skipEveryone);
+game.Players[0].Hand.Add(ashlinCard);
 
 game.Players[0].Hand.Add(new Card
 {
@@ -63,17 +63,6 @@ game.Players[2].Hand.Add(new Card
 {
     Color = CardColor.Green,
     Type = CardType.Number,
-    Number = 4
-});
-
-// ========================================
-// NEHA
-// ========================================
-
-game.Players[3].Hand.Add(new Card
-{
-    Color = CardColor.Yellow,
-    Type = CardType.Number,
     Number = 7
 });
 
@@ -81,7 +70,7 @@ game.Players[3].Hand.Add(new Card
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== SKIP EVERYONE ELIMINATED PLAYER TEST ===");
+Console.WriteLine("=== NEXT TURN ELIMINATED PLAYER TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
@@ -91,26 +80,20 @@ Console.WriteLine(
     $"Direction BEFORE: {game.Direction}");
 
 Console.WriteLine(
-    $"Turn Advance BEFORE: {game.TurnAdvance}");
-
-Console.WriteLine(
     $"Rahul Eliminated: {game.Players[1].IsEliminated}");
-
-Console.WriteLine(
-    $"Active Players: {game.Players.Count(p => !p.IsEliminated)}");
 
 Console.WriteLine();
 
 // ========================================
-// ASHLIN PLAYS SKIP EVERYONE
+// ASHLIN PLAYS NORMAL CARD
 // ========================================
 
 var result = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    skipEveryone.Id);
+    ashlinCard.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS SKIP EVERYONE ===");
+Console.WriteLine("=== ASHLIN PLAYS RED 8 ===");
 
 Console.WriteLine(
     $"Success: {result.Success}");
@@ -122,10 +105,10 @@ Console.WriteLine(
     $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Direction AFTER: {game.Direction}");
+    $"Current Player Index: {game.CurrentPlayerIndex}");
 
 Console.WriteLine(
-    $"Turn Advance AFTER: {game.TurnAdvance}");
+    $"Direction AFTER: {game.Direction}");
 
 Console.WriteLine();
 
@@ -135,18 +118,15 @@ Console.WriteLine();
 
 Console.WriteLine("=== EXPECTED ===");
 
-Console.WriteLine("Rahul is eliminated before the card is played.");
+Console.WriteLine("Ashlin plays Red 8.");
 
 Console.WriteLine();
 
-Console.WriteLine("Ashlin plays Skip Everyone.");
-
-Console.WriteLine("Rahul is ignored because he is eliminated.");
-Console.WriteLine("Arun should be skipped.");
-Console.WriteLine("Neha should be skipped.");
+Console.WriteLine("Rahul is eliminated.");
+Console.WriteLine("Rahul must NOT receive the turn.");
 
 Console.WriteLine();
 
-Console.WriteLine("Current Player AFTER: Ashlin");
-Console.WriteLine("Direction AFTER: 1");
-Console.WriteLine("Turn Advance AFTER: 1");
+Console.WriteLine("Expected Current Player AFTER: Arun");
+Console.WriteLine("Expected Current Player Index: 2");
+Console.WriteLine("Expected Direction: 1");

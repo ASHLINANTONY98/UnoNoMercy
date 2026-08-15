@@ -407,6 +407,22 @@ namespace UnoNoMercy.GameEngine.Services
                         break;
                     }
 
+                case CardType.DrawFour:
+                    {
+                        game.PendingDrawCount += 4;
+                        game.CurrentStackValue = 4;
+
+                        game.LargestStack =
+                            Math.Max(
+                                game.LargestStack,
+                                game.PendingDrawCount);
+
+                        Console.WriteLine(
+                            $"🔥 Draw penalty = {game.PendingDrawCount}");
+
+                        break;
+                    }
+
                 case CardType.Wild:
                     {
 

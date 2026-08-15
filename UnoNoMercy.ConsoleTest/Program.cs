@@ -9,7 +9,8 @@ var game = new Game
     Players =
     {
         new Player { Name = "Ashlin" },
-        new Player { Name = "Rahul" }
+        new Player { Name = "Rahul" },
+        new Player { Name = "Arun" }
     }
 };
 
@@ -29,18 +30,17 @@ game.DiscardPile.Add(new Card
 });
 
 // ========================================
-// ASHLIN GETS RED REVERSE
+// ASHLIN GETS RED +2
 // ========================================
 
-var ashlinReverse = new Card
+var ashlinDrawTwo = new Card
 {
     Color = CardColor.Red,
-    Type = CardType.Reverse
+    Type = CardType.DrawTwo
 };
 
-game.Players[0].Hand.Add(ashlinReverse);
+game.Players[0].Hand.Add(ashlinDrawTwo);
 
-// Extra card so Ashlin doesn't win
 game.Players[0].Hand.Add(new Card
 {
     Color = CardColor.Blue,
@@ -49,50 +49,67 @@ game.Players[0].Hand.Add(new Card
 });
 
 // ========================================
-// RAHUL GETS BLUE REVERSE
+// RAHUL GETS NORMAL CARD
 // ========================================
 
-var rahulReverse = new Card
+var rahulNormal = new Card
 {
     Color = CardColor.Blue,
-    Type = CardType.Reverse
+    Type = CardType.Number,
+    Number = 7
 };
 
-game.Players[1].Hand.Add(rahulReverse);
+game.Players[1].Hand.Add(rahulNormal);
 
-// Extra card so Rahul doesn't win
 game.Players[1].Hand.Add(new Card
 {
     Color = CardColor.Green,
     Type = CardType.Number,
-    Number = 3
+    Number = 4
+});
+
+// ========================================
+// ARUN
+// ========================================
+
+game.Players[2].Hand.Add(new Card
+{
+    Color = CardColor.Yellow,
+    Type = CardType.Number,
+    Number = 9
 });
 
 // ========================================
 // BEFORE
 // ========================================
 
-Console.WriteLine("=== 2 PLAYER REVERSE TEST ===");
+Console.WriteLine("=== INVALID DRAW TWO STACKING TEST ===");
 Console.WriteLine();
 
 Console.WriteLine(
     $"Current Player BEFORE: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Direction BEFORE: {game.Direction}");
+    $"Pending Draw BEFORE: {game.PendingDrawCount}");
+
+Console.WriteLine(
+    $"Stack Value BEFORE: {game.CurrentStackValue}");
+
+Console.WriteLine(
+    $"Rahul Hand BEFORE: {game.Players[1].Hand.Count}");
 
 Console.WriteLine();
 
 // ========================================
-// ASHLIN PLAYS REVERSE
+// ASHLIN PLAYS +2
 // ========================================
 
 var result1 = gameService.PlayPlayerCard(
     game,
     "Ashlin",
-    ashlinReverse.Id);
+    ashlinDrawTwo.Id);
 
-Console.WriteLine("=== ASHLIN PLAYS REVERSE ===");
+Console.WriteLine("=== ASHLIN PLAYS +2 ===");
 
 Console.WriteLine(
     $"Success: {result1.Success}");
@@ -101,23 +118,26 @@ Console.WriteLine(
     $"Message: {result1.Message}");
 
 Console.WriteLine(
-    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Direction AFTER: {game.Direction}");
+    $"Pending Draw: {game.PendingDrawCount}");
+
+Console.WriteLine(
+    $"Stack Value: {game.CurrentStackValue}");
 
 Console.WriteLine();
 
 // ========================================
-// RAHUL PLAYS REVERSE
+// RAHUL TRIES NORMAL CARD
 // ========================================
 
 var result2 = gameService.PlayPlayerCard(
     game,
     "Rahul",
-    rahulReverse.Id);
+    rahulNormal.Id);
 
-Console.WriteLine("=== RAHUL PLAYS REVERSE ===");
+Console.WriteLine("=== RAHUL TRIES NORMAL CARD ===");
 
 Console.WriteLine(
     $"Success: {result2.Success}");
@@ -126,10 +146,16 @@ Console.WriteLine(
     $"Message: {result2.Message}");
 
 Console.WriteLine(
-    $"Current Player AFTER: {gameService.GetCurrentPlayer(game).Name}");
+    $"Current Player: {gameService.GetCurrentPlayer(game).Name}");
 
 Console.WriteLine(
-    $"Direction AFTER: {game.Direction}");
+    $"Pending Draw: {game.PendingDrawCount}");
+
+Console.WriteLine(
+    $"Stack Value: {game.CurrentStackValue}");
+
+Console.WriteLine(
+    $"Rahul Hand: {game.Players[1].Hand.Count}");
 
 Console.WriteLine();
 
@@ -139,20 +165,20 @@ Console.WriteLine();
 
 Console.WriteLine("=== EXPECTED ===");
 
-Console.WriteLine();
-
-Console.WriteLine("1. Before");
-Console.WriteLine("Current Player: Ashlin");
-Console.WriteLine("Direction: 1");
-
-Console.WriteLine();
-
-Console.WriteLine("2. Ashlin plays Reverse");
-Console.WriteLine("Direction AFTER: -1");
-Console.WriteLine("Current Player AFTER: Rahul");
+Console.WriteLine("Ashlin plays +2");
+Console.WriteLine("Pending Draw: 2");
+Console.WriteLine("Stack Value: 2");
+Console.WriteLine("Current Player: Rahul");
 
 Console.WriteLine();
 
-Console.WriteLine("3. Rahul plays Reverse");
-Console.WriteLine("Direction AFTER: 1");
-Console.WriteLine("Current Player AFTER: Ashlin");
+Console.WriteLine("Rahul tries normal card");
+
+Console.WriteLine("Success: False");
+Console.WriteLine(
+    "Message: Must stack a draw card or take 2 cards.");
+
+Console.WriteLine("Current Player: Rahul");
+Console.WriteLine("Pending Draw: 2");
+Console.WriteLine("Stack Value: 2");
+Console.WriteLine("Rahul Hand: 2");

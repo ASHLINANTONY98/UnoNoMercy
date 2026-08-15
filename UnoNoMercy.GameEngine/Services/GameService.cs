@@ -386,6 +386,16 @@ namespace UnoNoMercy.GameEngine.Services
                         break;
                     }
 
+                case CardType.SkipEveryone:
+                    {
+                        game.TurnAdvance = game.Players.Count;
+
+                        Console.WriteLine(
+                            "⏭ Skip Everyone activated!");
+
+                        break;
+                    }
+
                 case CardType.Reverse:
                     {
                         game.Direction *= -1;

@@ -13,8 +13,8 @@ namespace UnoNoMercy.Api.Hubs
         }
 
         public async Task JoinRoom(
-    string roomCode,
-    string playerName)
+            string roomCode,
+            string playerName)
         {
             Console.WriteLine(
                 $"[SignalR] JoinRoom called: {playerName} / {roomCode}");
@@ -95,6 +95,24 @@ namespace UnoNoMercy.Api.Hubs
                     {
                         PlayerName = player.Name
                     });
+        }
+
+        public Task<object> GetMyPlayer()
+        {
+            if (!_gameManager.PlayerConnections.TryGetValue(
+                Context.ConnectionId,
+                out var playerName))
+            {
+                throw new HubException(
+                    "You are not connected to a player.");
+            }
+
+            return Task.FromResult<object>(
+                new
+                {
+                    PlayerName = playerName,
+                    ConnectionId = Context.ConnectionId
+                });
         }
 
         public override async Task OnDisconnectedAsync(

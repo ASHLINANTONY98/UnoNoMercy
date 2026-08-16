@@ -3,7 +3,7 @@
 Console.WriteLine("=== SIGNALR ROOM TEST ===");
 Console.WriteLine();
 
-var roomCode = "83GVAJ"; // CHANGE THIS
+var roomCode = "4BH9BQ"; // CHANGE THIS
 var playerName = "Ashlin";
 
 var connection = new HubConnectionBuilder()
@@ -69,10 +69,19 @@ try
     Console.WriteLine(
         $"Player: {playerName}");
 
-    await connection.InvokeAsync(
-        "JoinRoom",
-        roomCode,
-        playerName);
+    //await connection.InvokeAsync(
+    //    "JoinRoom",
+    //    roomCode,
+    //    playerName);
+
+    Console.WriteLine();
+    Console.WriteLine("Checking current connection identity...");
+
+    var myPlayer = await connection.InvokeAsync<object>(
+        "GetMyPlayer");
+
+    Console.WriteLine("=== MY PLAYER ===");
+    Console.WriteLine(myPlayer);
 
     Console.WriteLine();
     Console.WriteLine(

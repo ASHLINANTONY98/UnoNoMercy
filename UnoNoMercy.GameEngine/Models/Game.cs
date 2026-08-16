@@ -41,5 +41,9 @@ namespace UnoNoMercy.GameEngine.Models
         public bool IsColorRouletteActive { get; set; } = false;
 
         public CardColor? RouletteChosenColor { get; set; }
+
+        // Used to synchronize state-changing operations
+        // for this specific game.
+        public object SyncRoot { get; } = new();
     }
 }

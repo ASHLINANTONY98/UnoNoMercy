@@ -720,103 +720,111 @@ namespace UnoNoMercy.GameEngine.Services
             string cardId,
             string? targetPlayerName = null)
         {
-            if (!game.HasStarted)
+            lock (game.SyncRoot)
             {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Game not started."
-                };
-            }
-
-            if (game.IsGameOver)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Game already finished."
-                };
-            }
-            var player = GetCurrentPlayer(game);
-
-            if (player.Name != playerName)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Not your turn."
-                };
-            }
-
-            var card = player.Hand
-                .FirstOrDefault(c => c.Id == cardId);
-
-            if (card == null)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Card not found."
-                };
-            }
-
-            var topCard = GetTopCard(game);
-
-            if (HasPendingPenalty(game))
-            {
-                if (GetDrawValue(card) < game.CurrentStackValue)
+                if (!game.HasStarted)
                 {
                     return new PlayCardResponse
                     {
                         Success = false,
-                        Message = $"Must stack a draw card or take {game.PendingDrawCount} cards."
+                        Message = "Game not started."
                     };
                 }
-            }
-            else
-            {
-                if (!CanPlayCard(game, card, topCard))
+
+                if (game.IsGameOver)
                 {
                     return new PlayCardResponse
                     {
                         Success = false,
-                        Message = "Invalid card."
+                        Message = "Game already finished."
                     };
                 }
-            }
 
-            game.TotalTurns++;
+                var player = GetCurrentPlayer(game);
 
-            PlayCard(game, player, card);
+                if (player.Name != playerName)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Not your turn."
+                    };
+                }
 
-            game.HasDrawnThisTurn = false;
+                var card = player.Hand
+                    .FirstOrDefault(c => c.Id == cardId);
 
-            bool playedLastCard =
-                player.Hand.Count == 0;
+                if (card == null)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Card not found."
+                    };
+                }
 
-            ProcessSpecialCard(
-                game,
-                player,
-                card,
-                targetPlayerName);
+                var topCard = GetTopCard(game);
 
-            if (playedLastCard &&
-                game.PendingDrawCount == 0)
-            {
-                EndGame(
+                if (HasPendingPenalty(game))
+                {
+                    if (GetDrawValue(card) < game.CurrentStackValue)
+                    {
+                        return new PlayCardResponse
+                        {
+                            Success = false,
+                            Message =
+                                $"Must stack a draw card or take {game.PendingDrawCount} cards."
+                        };
+                    }
+                }
+                else
+                {
+                    if (!CanPlayCard(game, card, topCard))
+                    {
+                        return new PlayCardResponse
+                        {
+                            Success = false,
+                            Message = "Invalid card."
+                        };
+                    }
+                }
+
+                game.TotalTurns++;
+
+                PlayCard(
                     game,
-                    player.Name);
-            }
-            else
-            {
-                NextTurn(game);
-            }
+                    player,
+                    card);
 
-            return new PlayCardResponse
-            {
-                Success = true,
-                Message = "Card played successfully."
-            };
+                game.HasDrawnThisTurn = false;
+
+                bool playedLastCard =
+                    player.Hand.Count == 0;
+
+                ProcessSpecialCard(
+                    game,
+                    player,
+                    card,
+                    targetPlayerName);
+
+                if (playedLastCard &&
+                    game.PendingDrawCount == 0)
+                {
+                    EndGame(
+                        game,
+                        player.Name);
+                }
+                else
+                {
+                    NextTurn(game);
+                }
+
+                return new PlayCardResponse
+                {
+                    Success = true,
+                    Message = "Card played successfully."
+                };
+            }
         }
 
         public PlayCardResponse ChooseRouletteColor(
@@ -824,295 +832,307 @@ namespace UnoNoMercy.GameEngine.Services
             string playerName,
             CardColor chosenColor)
         {
-            if (!game.HasStarted)
+            lock (game.SyncRoot)
             {
-                return new PlayCardResponse
+                if (!game.HasStarted)
                 {
-                    Success = false,
-                    Message = "Game not started."
-                };
-            }
-
-            if (game.IsGameOver)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Game already finished."
-                };
-            }
-
-            if (!game.IsColorRouletteActive)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Color Roulette is not active."
-                };
-            }
-
-            var player = GetCurrentPlayer(game);
-
-            if (player.Name != playerName)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Not your turn."
-                };
-            }
-
-            if (chosenColor == CardColor.Wild)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Roulette color must be Red, Blue, Green, or Yellow."
-                };
-            }
-
-            game.RouletteChosenColor = chosenColor;
-
-            Console.WriteLine(
-                $"🎰 {player.Name} chose {chosenColor}.");
-
-            int drawnCount = 0;
-
-            while (true)
-            {
-                var drawnCard = DrawCard(game);
-
-                player.Hand.Add(drawnCard);
-
-                drawnCount++;
-
-                Console.WriteLine(
-                    $"🎰 Roulette drew: {drawnCard}");
-
-                CheckMercyRule(game, player);
-
-                if (player.IsEliminated)
-                {
-                    game.IsColorRouletteActive = false;
-                    game.RouletteChosenColor = null;
-                    game.ActiveColor = null;
-
                     return new PlayCardResponse
                     {
-                        Success = true,
-                        Message =
-                            $"{player.Name} was eliminated during Color Roulette."
+                        Success = false,
+                        Message = "Game not started."
                     };
                 }
 
-                if (drawnCard.Color == chosenColor)
+                if (game.IsGameOver)
                 {
-                    break;
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Game already finished."
+                    };
                 }
+
+                if (!game.IsColorRouletteActive)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Color Roulette is not active."
+                    };
+                }
+
+                var player = GetCurrentPlayer(game);
+
+                if (player.Name != playerName)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Not your turn."
+                    };
+                }
+
+                if (chosenColor == CardColor.Wild)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Roulette color must be Red, Blue, Green, or Yellow."
+                    };
+                }
+
+                game.RouletteChosenColor = chosenColor;
+
+                Console.WriteLine(
+                    $"🎰 {player.Name} chose {chosenColor}.");
+
+                int drawnCount = 0;
+
+                while (true)
+                {
+                    var drawnCard = DrawCard(game);
+
+                    player.Hand.Add(drawnCard);
+
+                    drawnCount++;
+
+                    Console.WriteLine(
+                        $"🎰 Roulette drew: {drawnCard}");
+
+                    CheckMercyRule(game, player);
+
+                    if (player.IsEliminated)
+                    {
+                        game.IsColorRouletteActive = false;
+                        game.RouletteChosenColor = null;
+                        game.ActiveColor = null;
+
+                        return new PlayCardResponse
+                        {
+                            Success = true,
+                            Message =
+                                $"{player.Name} was eliminated during Color Roulette."
+                        };
+                    }
+
+                    if (drawnCard.Color == chosenColor)
+                    {
+                        break;
+                    }
+                }
+
+                game.ActiveColor = chosenColor;
+
+                game.IsColorRouletteActive = false;
+
+                Console.WriteLine(
+                    $"🎰 Roulette stopped! {chosenColor} was drawn.");
+
+                Console.WriteLine(
+                    $"🎰 {player.Name} drew {drawnCount} card(s).");
+
+                NextTurn(game);
+
+                return new PlayCardResponse
+                {
+                    Success = true,
+                    Message =
+                        $"Color Roulette completed. Drew {drawnCount} card(s)."
+                };
             }
-
-            game.ActiveColor = chosenColor;
-
-            game.IsColorRouletteActive = false;
-
-            Console.WriteLine(
-                $"🎰 Roulette stopped! {chosenColor} was drawn.");
-
-            Console.WriteLine(
-                $"🎰 {player.Name} drew {drawnCount} card(s).");
-
-            NextTurn(game);
-
-            return new PlayCardResponse
-            {
-                Success = true,
-                Message =
-                    $"Color Roulette completed. Drew {drawnCount} card(s)."
-            };
         }
 
         public PlayCardResponse ChooseWildColor(
-    Game game,
-    string playerName,
-    CardColor chosenColor)
+            Game game,
+            string playerName,
+            CardColor chosenColor)
         {
-            if (!game.HasStarted)
+            lock (game.SyncRoot)
             {
+                if (!game.HasStarted)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Game not started."
+                    };
+                }
+
+                if (game.IsGameOver)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Game already finished."
+                    };
+                }
+
+                var player = GetCurrentPlayer(game);
+
+                if (player.Name != playerName)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Not your turn."
+                    };
+                }
+
+                if (chosenColor == CardColor.Wild)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Wild color must be Red, Blue, Green, or Yellow."
+                    };
+                }
+
+                var topCard = GetTopCard(game);
+
+                if (topCard.Type != CardType.Wild)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Normal Wild color selection is not active."
+                    };
+                }
+
+                if (game.ActiveColor != null)
+                {
+                    return new PlayCardResponse
+                    {
+                        Success = false,
+                        Message = "Wild color has already been selected."
+                    };
+                }
+
+                game.ActiveColor = chosenColor;
+
+                Console.WriteLine(
+                    $"🌈 {player.Name} chose {chosenColor}.");
+
                 return new PlayCardResponse
                 {
-                    Success = false,
-                    Message = "Game not started."
+                    Success = true,
+                    Message = $"Wild color changed to {chosenColor}."
                 };
             }
-
-            if (game.IsGameOver)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Game already finished."
-                };
-            }
-
-            var player = GetCurrentPlayer(game);
-
-            if (player.Name != playerName)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Not your turn."
-                };
-            }
-
-            if (chosenColor == CardColor.Wild)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Wild color must be Red, Blue, Green, or Yellow."
-                };
-            }
-
-            var topCard = GetTopCard(game);
-
-            if (topCard.Type != CardType.Wild)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Normal Wild color selection is not active."
-                };
-            }
-
-            if (game.ActiveColor != null)
-            {
-                return new PlayCardResponse
-                {
-                    Success = false,
-                    Message = "Wild color has already been selected."
-                };
-            }
-
-            game.ActiveColor = chosenColor;
-
-            Console.WriteLine(
-                $"🌈 {player.Name} chose {chosenColor}.");
-
-            return new PlayCardResponse
-            {
-                Success = true,
-                Message = $"Wild color changed to {chosenColor}."
-            };
+            
         }
 
         public DrawCardResponse DrawPlayerCard(
             Game game,
             string playerName)
         {
-
-            if (!game.HasStarted)
+            lock (game.SyncRoot)
             {
-                return new DrawCardResponse
+                if (!game.HasStarted)
                 {
-                    Success = false,
-                    Message = "Game not started."
-                };
-            }
-
-            if (game.HasDrawnThisTurn)
-            {
-                return new DrawCardResponse
-                {
-                    Success = false,
-                    Message = "You already drew a card."
-                };
-            }
-            
-            if (game.IsGameOver)
-            {
-                return new DrawCardResponse
-                {
-                    Success = false,
-                    Message = "Game already finished."
-                };
-            }
-
-            var player = GetCurrentPlayer(game);
-
-            if (player.Name != playerName)
-            {
-                return new DrawCardResponse
-                {
-                    Success = false,
-                    Message = "Not your turn."
-                };
-            }
-
-            game.TotalTurns++;
-
-            if (HasPendingPenalty(game))
-            {
-                for (int i = 0; i < game.PendingDrawCount; i++)
-                {
-                    player.Hand.Add(DrawCard(game));
+                    return new DrawCardResponse
+                    {
+                        Success = false,
+                        Message = "Game not started."
+                    };
                 }
 
+                if (game.HasDrawnThisTurn)
+                {
+                    return new DrawCardResponse
+                    {
+                        Success = false,
+                        Message = "You already drew a card."
+                    };
+                }
+
+                if (game.IsGameOver)
+                {
+                    return new DrawCardResponse
+                    {
+                        Success = false,
+                        Message = "Game already finished."
+                    };
+                }
+
+                var player = GetCurrentPlayer(game);
+
+                if (player.Name != playerName)
+                {
+                    return new DrawCardResponse
+                    {
+                        Success = false,
+                        Message = "Not your turn."
+                    };
+                }
+
+                game.TotalTurns++;
+
+                if (HasPendingPenalty(game))
+                {
+                    for (int i = 0; i < game.PendingDrawCount; i++)
+                    {
+                        player.Hand.Add(DrawCard(game));
+                    }
+
+                    CheckMercyRule(game, player);
+
+                    int penalty = game.PendingDrawCount;
+
+                    game.PendingDrawCount = 0;
+                    game.CurrentStackValue = 0;
+                    game.HasDrawnThisTurn = false;
+
+                    NextTurn(game);
+
+                    return new DrawCardResponse
+                    {
+                        Success = true,
+                        Message = $"Drew {penalty} penalty cards."
+                    };
+                }
+                var drawnCard = DrawCard(game);
+
+                player.Hand.Add(drawnCard);
+
+                game.HasDrawnThisTurn = true;
+
                 CheckMercyRule(game, player);
-
-                int penalty = game.PendingDrawCount;
-
-                game.PendingDrawCount = 0;
-                game.CurrentStackValue = 0;
-                game.HasDrawnThisTurn = false;
-
-                NextTurn(game);
 
                 return new DrawCardResponse
                 {
                     Success = true,
-                    Message = $"Drew {penalty} penalty cards."
+                    Message = "Card drawn successfully.",
+                    DrawnCard = drawnCard.ToString()
                 };
             }
-            var drawnCard = DrawCard(game);
-
-            player.Hand.Add(drawnCard);
-
-            game.HasDrawnThisTurn = true;
-
-            CheckMercyRule(game, player);
-
-            return new DrawCardResponse
-            {
-                Success = true,
-                Message = "Card drawn successfully.",
-                DrawnCard = drawnCard.ToString()
-            };
+            
         }
 
         public bool PassTurn(
             Game game,
             string playerName)
         {
-
-            if (!game.HasStarted)
+            lock (game.SyncRoot)
             {
-                return false;
+                if (!game.HasStarted)
+                {
+                    return false;
+                }
+
+                var player = GetCurrentPlayer(game);
+
+                if (player.Name != playerName)
+                    return false;
+
+                if (!game.HasDrawnThisTurn)
+                    return false;
+
+                game.HasDrawnThisTurn = false;
+
+                NextTurn(game);
+
+                return true;
             }
-
-            var player = GetCurrentPlayer(game);
-
-            if (player.Name != playerName)
-                return false;
-
-            if (!game.HasDrawnThisTurn)
-                return false;
-
-            game.HasDrawnThisTurn = false;
-
-            NextTurn(game);
-
-            return true;
         }
 
         private bool HasPendingPenalty(Game game)

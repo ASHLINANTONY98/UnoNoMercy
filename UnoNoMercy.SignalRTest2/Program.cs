@@ -3,7 +3,7 @@
 Console.WriteLine("=== SIGNALR ROOM TEST TWO===");
 Console.WriteLine();
 
-var roomCode = "9JL9LP";
+var roomCode = "HF95JW";
 var playerName = "Rahul";
 
 RoomJoinedResponse? roomJoined = null;

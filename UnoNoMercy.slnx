@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="UnoNoMercy.Api/UnoNoMercy.Api.csproj" />
+  <Project Path="UnoNoMercy.ConcurrencyTest/UnoNoMercy.ConcurrencyTest.csproj" Id="f59b9f9d-0870-4d24-8356-86dd6381446b" />
   <Project Path="UnoNoMercy.ConsoleTest/UnoNoMercy.ConsoleTest.csproj" />
   <Project Path="UnoNoMercy.GameEngine/UnoNoMercy.GameEngine.csproj" />
   <Project Path="UnoNoMercy.SignalRTest2/UnoNoMercy.SignalRTest2.csproj" Id="7adc47f1-8140-4e05-b83d-7a3aa5fbc3cc" />

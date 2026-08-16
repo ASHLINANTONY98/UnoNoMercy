@@ -513,50 +513,58 @@ public class GameController : ControllerBase
                 "Session does not belong to this room.");
         }
 
-        if (game.HasStarted)
+        GameStateDto gameState;
+
+        lock (game.SyncRoot)
         {
-            return BadRequest(
-                "Game already started.");
-        }
-
-        if (game.Players.Count < 2)
-        {
-            return BadRequest(
-                "Minimum 2 players required.");
-        }
-
-        _gameService.DealCards(game);
-
-        Card startingCard;
-
-        while (true)
-        {
-            startingCard =
-                _gameService.DrawCard(game);
-
-            if (startingCard.Type ==
-                CardType.Number)
+            if (game.HasStarted)
             {
-                game.DiscardPile.Add(
-                    startingCard);
-
-                break;
+                return BadRequest(
+                    "Game already started.");
             }
 
-            game.Deck.Add(
-                startingCard);
+            if (game.Players.Count < 2)
+            {
+                return BadRequest(
+                    "Minimum 2 players required.");
+            }
 
-            _deckService.Shuffle(
-                game.Deck);
+            _gameService.DealCards(game);
+
+            Card startingCard;
+
+            while (true)
+            {
+                startingCard =
+                    _gameService.DrawCard(game);
+
+                if (startingCard.Type ==
+                    CardType.Number)
+                {
+                    game.DiscardPile.Add(
+                        startingCard);
+
+                    break;
+                }
+
+                game.Deck.Add(
+                    startingCard);
+
+                _deckService.Shuffle(
+                    game.Deck);
+            }
+
+            game.HasStarted = true;
+
+            gameState =
+                _gameService.GetGameState(game);
         }
-
-        game.HasStarted = true;
 
         await _hubContext.Clients
             .Group(game.RoomCode)
             .SendAsync(
                 "GameStarted",
-                _gameService.GetGameState(game));
+                gameState);
 
         return Ok(
             "Game started.");

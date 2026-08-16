@@ -9,5 +9,17 @@ namespace UnoNoMercy.Api.Services
 
         public Dictionary<string, string> PlayerConnections { get; }
             = new();
+
+        public Dictionary<string, PlayerSession> PlayerSessions { get; }
+            = new();
+
+        public bool TryGetSession(
+            string sessionToken,
+            out PlayerSession session)
+        {
+            return PlayerSessions.TryGetValue(
+                sessionToken,
+                out session!);
+        }
     }
 }

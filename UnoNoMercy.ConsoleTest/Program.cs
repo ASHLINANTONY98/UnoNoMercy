@@ -3,20 +3,36 @@
 Console.WriteLine("=== SIGNALR ROOM TEST ===");
 Console.WriteLine();
 
-var roomCode = "4BH9BQ"; // CHANGE THIS
+var roomCode = "38WIT3";
 var playerName = "Ashlin";
+
+// Wait for the RoomJoined event
+var roomJoinedSource =
+    new TaskCompletionSource<RoomJoinedResponse>();
 
 var connection = new HubConnectionBuilder()
     .WithUrl("https://localhost:7285/gamehub")
     .WithAutomaticReconnect()
     .Build();
 
-connection.On<object>(
+connection.On<RoomJoinedResponse>(
     "RoomJoined",
     data =>
     {
-        Console.WriteLine("=== ROOM JOINED ===");
-        Console.WriteLine(data);
+        Console.WriteLine(
+            "=== ROOM JOINED ===");
+
+        Console.WriteLine(
+            $"Room: {data.RoomCode}");
+
+        Console.WriteLine(
+            $"Player: {data.PlayerName}");
+
+        Console.WriteLine(
+            $"Session Token: {data.SessionToken}");
+
+        // Tell the main flow that RoomJoined has arrived
+        roomJoinedSource.TrySetResult(data);
     });
 
 connection.On<object>(
@@ -24,7 +40,10 @@ connection.On<object>(
     data =>
     {
         Console.WriteLine();
-        Console.WriteLine("=== PLAYER JOINED EVENT ===");
+
+        Console.WriteLine(
+            "=== PLAYER JOINED EVENT ===");
+
         Console.WriteLine(data);
     });
 
@@ -33,14 +52,19 @@ connection.On<object>(
     data =>
     {
         Console.WriteLine();
-        Console.WriteLine("=== GAME STATE UPDATED ===");
+
+        Console.WriteLine(
+            "=== GAME STATE UPDATED ===");
+
         Console.WriteLine(data);
     });
 
 connection.Closed += async error =>
 {
     Console.WriteLine();
-    Console.WriteLine("SignalR connection closed.");
+
+    Console.WriteLine(
+        "SignalR connection closed.");
 
     if (error != null)
     {
@@ -69,25 +93,56 @@ try
     Console.WriteLine(
         $"Player: {playerName}");
 
-    //await connection.InvokeAsync(
-    //    "JoinRoom",
-    //    roomCode,
-    //    playerName);
+    // Join the room
+    await connection.InvokeAsync(
+        "JoinRoom",
+        roomCode,
+        playerName);
+
+    // Wait until the RoomJoined event is received
+    var roomJoined =
+        await roomJoinedSource.Task;
 
     Console.WriteLine();
-    Console.WriteLine("Checking current connection identity...");
 
-    var myPlayer = await connection.InvokeAsync<object>(
-        "GetMyPlayer");
+    Console.WriteLine(
+        "Checking session identity...");
 
-    Console.WriteLine("=== MY PLAYER ===");
+    var sessionPlayer =
+        await connection.InvokeAsync<object>(
+            "GetSessionPlayer",
+            roomJoined.SessionToken);
+
+    Console.WriteLine();
+
+    Console.WriteLine(
+        "=== SESSION PLAYER ===");
+
+    Console.WriteLine(sessionPlayer);
+
+    Console.WriteLine();
+
+    Console.WriteLine(
+        "Checking current connection identity...");
+
+    var myPlayer =
+        await connection.InvokeAsync<object>(
+            "GetMyPlayer");
+
+    Console.WriteLine();
+
+    Console.WriteLine(
+        "=== MY PLAYER ===");
+
     Console.WriteLine(myPlayer);
 
     Console.WriteLine();
+
     Console.WriteLine(
         "JoinRoom call completed.");
 
     Console.WriteLine();
+
     Console.WriteLine(
         "Press ENTER to disconnect.");
 
@@ -96,10 +151,26 @@ try
 catch (Exception ex)
 {
     Console.WriteLine();
-    Console.WriteLine("=== SIGNALR TEST FAILED ===");
-    Console.WriteLine(ex.Message);
+
+    Console.WriteLine(
+        "=== SIGNALR TEST FAILED ===");
+
+    Console.WriteLine(
+        ex.Message);
 }
 finally
 {
     await connection.DisposeAsync();
+}
+
+public class RoomJoinedResponse
+{
+    public string RoomCode { get; set; }
+        = string.Empty;
+
+    public string PlayerName { get; set; }
+        = string.Empty;
+
+    public string SessionToken { get; set; }
+        = string.Empty;
 }

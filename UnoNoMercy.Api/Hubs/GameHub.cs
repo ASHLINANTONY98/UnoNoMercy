@@ -78,13 +78,27 @@ namespace UnoNoMercy.Api.Hubs
             Console.WriteLine(
                 $"[SignalR] Sending RoomJoined: {player.Name}");
 
+            var sessionToken =
+                Guid.NewGuid().ToString();
+
+            _gameManager.PlayerSessions[
+                sessionToken] =
+                new PlayerSession
+                {
+                    GameId = gameEntry.Key,
+                    RoomCode = game.RoomCode,
+                    PlayerName = player.Name,
+                    ConnectionId = Context.ConnectionId
+                };
+
             // Tell the joining player
             await Clients.Caller.SendAsync(
                 "RoomJoined",
                 new
                 {
                     RoomCode = game.RoomCode,
-                    PlayerName = player.Name
+                    PlayerName = player.Name,
+                    SessionToken = sessionToken
                 });
 
             // Tell everyone in the room
@@ -112,6 +126,33 @@ namespace UnoNoMercy.Api.Hubs
                 {
                     PlayerName = playerName,
                     ConnectionId = Context.ConnectionId
+                });
+        }
+
+        public Task<object> GetSessionPlayer(
+            string sessionToken)
+        {
+            if (string.IsNullOrWhiteSpace(sessionToken))
+            {
+                throw new HubException(
+                    "Session token is required.");
+            }
+
+            if (!_gameManager.TryGetSession(
+                sessionToken,
+                out var session))
+            {
+                throw new HubException(
+                    "Invalid session token.");
+            }
+
+            return Task.FromResult<object>(
+                new
+                {
+                    session.GameId,
+                    session.RoomCode,
+                    session.PlayerName,
+                    session.ConnectionId
                 });
         }
 

@@ -156,6 +156,77 @@ namespace UnoNoMercy.Api.Hubs
                 });
         }
 
+        public async Task<object> ResumeSession(
+            string sessionToken)
+        {
+            if (string.IsNullOrWhiteSpace(sessionToken))
+            {
+                throw new HubException(
+                    "Session token is required.");
+            }
+
+            if (!_gameManager.TryGetSession(
+                sessionToken,
+                out var session))
+            {
+                throw new HubException(
+                    "Invalid session token.");
+            }
+
+            if (!_gameManager.Games.TryGetValue(
+                session.GameId,
+                out var game))
+            {
+                throw new HubException(
+                    "Game not found.");
+            }
+
+            if (!game.RoomCode.Equals(
+                session.RoomCode,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                throw new HubException(
+                    "Session does not belong to this room.");
+            }
+
+            var player = game.Players
+                .FirstOrDefault(x =>
+                    x.Name.Equals(
+                        session.PlayerName,
+                        StringComparison.OrdinalIgnoreCase));
+
+            if (player == null)
+            {
+                throw new HubException(
+                    "Player is not a member of this room.");
+            }
+
+            if (player.IsEliminated)
+            {
+                throw new HubException(
+                    "Eliminated players cannot reconnect.");
+            }
+
+            await Groups.AddToGroupAsync(
+                Context.ConnectionId,
+                game.RoomCode);
+
+            _gameManager.PlayerConnections[
+                Context.ConnectionId] =
+                player.Name;
+
+            session.ConnectionId =
+                Context.ConnectionId;
+
+            return new
+            {
+                session.GameId,
+                session.RoomCode,
+                session.PlayerName,
+                session.ConnectionId
+            };
+        }
+
         public override async Task OnDisconnectedAsync(
             Exception? exception)
         {

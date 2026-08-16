@@ -2,7 +2,7 @@
 {
     public class StartGameRequest
     {
-        public string RoomCode { get; set; }
+        public string SessionToken { get; set; }
             = string.Empty;
     }
 }

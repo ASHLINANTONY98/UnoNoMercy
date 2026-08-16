@@ -474,19 +474,38 @@ public class GameController : ControllerBase
     public async Task<IActionResult> StartGame(
     StartGameRequest request)
     {
-        var gameEntry =
-            _gameManager.Games
-                .FirstOrDefault(x =>
-                    x.Value.RoomCode ==
-                    request.RoomCode);
+        PlayerSession session;
 
-        if (gameEntry.Value == null)
+        try
         {
-            return NotFound(
-                "Room not found.");
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
         }
 
-        var game = gameEntry.Value;
+        if (!_gameManager.Games.TryGetValue(
+            session.GameId,
+            out var game))
+        {
+            return NotFound(
+                "Game not found.");
+        }
+
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
+        }
 
         if (game.HasStarted)
         {
@@ -535,7 +554,6 @@ public class GameController : ControllerBase
 
         return Ok(
             "Game started.");
-
     }
 
     private async Task BroadcastGameState(

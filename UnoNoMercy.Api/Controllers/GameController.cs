@@ -143,23 +143,47 @@ public class GameController : ControllerBase
             });
     }
 
-    [HttpGet("hand/{gameId}/{playerName}")]
+    [HttpPost("hand")]
     public IActionResult GetHand(
-        Guid gameId,
-        string playerName)
+    GetHandRequest request)
     {
+        PlayerSession session;
+
+        try
+        {
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
         if (!_gameManager.Games.TryGetValue(
-            gameId,
+            session.GameId,
             out var game))
         {
             return NotFound(
                 "Game not found.");
         }
 
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
+        }
+
         return Ok(
             _gameService.GetPlayerHand(
                 game,
-                playerName));
+                session.PlayerName));
     }
 
     [HttpPost("play-card")]

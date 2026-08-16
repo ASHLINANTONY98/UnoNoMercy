@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 
-Console.WriteLine("=== SIGNALR DUPLICATE CONNECTION TEST THREE===");
+Console.WriteLine("=== SIGNALR DUPLICATE CONNECTION TEST THREE ===");
 Console.WriteLine();
 
-var roomCode = "Q5XGVT";
+var roomCode = "9JL9LP";
 var playerName = "Ashlin";
 
 try
@@ -19,9 +19,40 @@ try
             .WithUrl("https://localhost:7285/gamehub")
             .Build();
 
+    // ------------------------------------------------------------
+    // CONNECTION 1 EVENT LISTENERS
+    // ------------------------------------------------------------
+
+    connection1.On<object>(
+        "GameStateUpdated",
+        data =>
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                "=== CONNECTION 1 - GAME STATE UPDATED ===");
+
+            Console.WriteLine(data);
+        });
+
+    connection1.On<object>(
+        "GameStarted",
+        data =>
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                "=== CONNECTION 1 - GAME STARTED ===");
+
+            Console.WriteLine(data);
+        });
+
     await connection1.StartAsync();
 
-    Console.WriteLine("Connection 1 connected.");
+    Console.WriteLine(
+        "Connection 1 connected.");
+
+    // ------------------------------------------------------------
+    // CONNECTION 1 - JOIN ROOM
+    // ------------------------------------------------------------
 
     var roomJoined1 =
         new TaskCompletionSource<RoomJoinedResponse>();
@@ -41,14 +72,25 @@ try
     var session1 =
         await roomJoined1.Task;
 
+    Console.WriteLine();
+    Console.WriteLine(
+        $"Ashlin Session Token: {session1.SessionToken}");
+
+    // ------------------------------------------------------------
+    // CONNECTION 1 - IDENTITY
+    // ------------------------------------------------------------
+
     var player1 =
         await connection1.InvokeAsync<ConnectionPlayerResponse>(
             "GetMyPlayer");
 
     Console.WriteLine();
-    Console.WriteLine("=== CONNECTION 1 IDENTITY ===");
+    Console.WriteLine(
+        "=== CONNECTION 1 IDENTITY ===");
+
     Console.WriteLine(
         $"Player: {player1.PlayerName}");
+
     Console.WriteLine(
         $"Connection ID: {player1.ConnectionId}");
 
@@ -57,18 +99,49 @@ try
     // ============================================================
 
     Console.WriteLine();
-    Console.WriteLine("=== CONNECTION 2 ===");
+    Console.WriteLine(
+        "=== CONNECTION 2 ===");
 
     var connection2 =
         new HubConnectionBuilder()
             .WithUrl("https://localhost:7285/gamehub")
             .Build();
 
+    // ------------------------------------------------------------
+    // CONNECTION 2 EVENT LISTENERS
+    // ------------------------------------------------------------
+
+    connection2.On<object>(
+        "GameStateUpdated",
+        data =>
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                "=== CONNECTION 2 - GAME STATE UPDATED ===");
+
+            Console.WriteLine(data);
+        });
+
+    connection2.On<object>(
+        "GameStarted",
+        data =>
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                "=== CONNECTION 2 - GAME STARTED ===");
+
+            Console.WriteLine(data);
+        });
+
     await connection2.StartAsync();
 
-    Console.WriteLine("Connection 2 connected.");
+    Console.WriteLine(
+        "Connection 2 connected.");
 
-    // Join same player again
+    // ------------------------------------------------------------
+    // CONNECTION 2 - JOIN SAME PLAYER
+    // ------------------------------------------------------------
+
     var roomJoined2 =
         new TaskCompletionSource<RoomJoinedResponse>();
 
@@ -87,14 +160,21 @@ try
     var session2 =
         await roomJoined2.Task;
 
+    // ------------------------------------------------------------
+    // CONNECTION 2 - IDENTITY
+    // ------------------------------------------------------------
+
     var player2 =
         await connection2.InvokeAsync<ConnectionPlayerResponse>(
             "GetMyPlayer");
 
     Console.WriteLine();
-    Console.WriteLine("=== CONNECTION 2 IDENTITY ===");
+    Console.WriteLine(
+        "=== CONNECTION 2 IDENTITY ===");
+
     Console.WriteLine(
         $"Player: {player2.PlayerName}");
+
     Console.WriteLine(
         $"Connection ID: {player2.ConnectionId}");
 
@@ -104,7 +184,8 @@ try
 
     Console.WriteLine();
 
-    if (player1.ConnectionId != player2.ConnectionId)
+    if (player1.ConnectionId !=
+        player2.ConnectionId)
     {
         Console.WriteLine(
             "SUCCESS: Two different connections exist.");
@@ -200,6 +281,10 @@ try
             "ERROR: Session connection is incorrect.");
     }
 
+    // ============================================================
+    // KEEP CONNECTION 2 ALIVE
+    // ============================================================
+
     Console.WriteLine();
     Console.WriteLine(
         "Press ENTER to disconnect Connection 2.");
@@ -214,9 +299,14 @@ catch (Exception ex)
     Console.WriteLine(
         "=== DUPLICATE CONNECTION TEST FAILED ===");
 
-    Console.WriteLine(ex.Message);
+    Console.WriteLine(
+        ex.Message);
 }
 
+
+// ================================================================
+// DTOs
+// ================================================================
 
 public class RoomJoinedResponse
 {

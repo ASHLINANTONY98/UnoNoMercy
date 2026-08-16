@@ -339,5 +339,15 @@ namespace UnoNoMercy.Api.Hubs
             await base.OnDisconnectedAsync(
                 exception);
         }
+
+        public async Task BroadcastGameState(
+            string roomCode,
+            object gameState)
+        {
+            await Clients.Group(roomCode)
+                .SendAsync(
+                    "GameStateUpdated",
+                    gameState);
+        }
     }
 }

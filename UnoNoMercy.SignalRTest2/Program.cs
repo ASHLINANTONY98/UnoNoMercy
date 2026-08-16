@@ -3,7 +3,7 @@
 Console.WriteLine("=== SIGNALR ROOM TEST TWO===");
 Console.WriteLine();
 
-var roomCode = "ZXYNUB";
+var roomCode = "9JL9LP";
 var playerName = "Rahul";
 
 RoomJoinedResponse? roomJoined = null;
@@ -49,6 +49,16 @@ connection.On<object>(
         Console.WriteLine();
         Console.WriteLine(
             "=== GAME STATE UPDATED ===");
+        Console.WriteLine(data);
+    });
+
+connection.On<object>(
+    "GameStarted",
+    data =>
+    {
+        Console.WriteLine();
+        Console.WriteLine(
+            "=== GAME STARTED ===");
         Console.WriteLine(data);
     });
 

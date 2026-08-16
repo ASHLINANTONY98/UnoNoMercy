@@ -6,10 +6,14 @@ namespace UnoNoMercy.Api.Hubs
     public class GameHub : Hub
     {
         private readonly GameManager _gameManager;
+        private readonly PlayerSessionService _playerSessionService;
 
-        public GameHub(GameManager gameManager)
+        public GameHub(
+            GameManager gameManager,
+            PlayerSessionService playerSessionService)
         {
             _gameManager = gameManager;
+            _playerSessionService = playerSessionService;
         }
 
         public async Task JoinRoom(
@@ -133,18 +137,21 @@ namespace UnoNoMercy.Api.Hubs
         public Task<object> GetSessionPlayer(
             string sessionToken)
         {
-            if (string.IsNullOrWhiteSpace(sessionToken))
-            {
-                throw new HubException(
-                    "Session token is required.");
-            }
+            PlayerSession session;
 
-            if (!_gameManager.TryGetSession(
-                sessionToken,
-                out var session))
+            try
             {
-                throw new HubException(
-                    "Invalid session token.");
+                session =
+                    _playerSessionService.GetRequiredSession(
+                        sessionToken);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new HubException(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new HubException(ex.Message);
             }
 
             return Task.FromResult<object>(
@@ -160,18 +167,21 @@ namespace UnoNoMercy.Api.Hubs
         public async Task<object> ResumeSession(
             string sessionToken)
         {
-            if (string.IsNullOrWhiteSpace(sessionToken))
-            {
-                throw new HubException(
-                    "Session token is required.");
-            }
+            PlayerSession session;
 
-            if (!_gameManager.TryGetSession(
-                sessionToken,
-                out var session))
+            try
             {
-                throw new HubException(
-                    "Invalid session token.");
+                session =
+                    _playerSessionService.GetRequiredSession(
+                        sessionToken);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new HubException(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new HubException(ex.Message);
             }
 
             if (!_gameManager.Games.TryGetValue(

@@ -88,7 +88,8 @@ namespace UnoNoMercy.Api.Hubs
                     GameId = gameEntry.Key,
                     RoomCode = game.RoomCode,
                     PlayerName = player.Name,
-                    ConnectionId = Context.ConnectionId
+                    ConnectionId = Context.ConnectionId,
+                    LastActivityUtc = DateTime.UtcNow
                 };
 
             // Tell the joining player
@@ -228,6 +229,9 @@ namespace UnoNoMercy.Api.Hubs
             // Update the session with the new connection
             session.ConnectionId =
                 Context.ConnectionId;
+
+            session.LastActivityUtc =
+                DateTime.UtcNow;
 
             return new
             {

@@ -11,5 +11,7 @@
             = string.Empty;
 
         public string? ConnectionId { get; set; }
+
+        public DateTime LastActivityUtc { get; set; }
     }
 }

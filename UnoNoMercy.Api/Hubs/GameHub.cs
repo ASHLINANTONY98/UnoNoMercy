@@ -207,14 +207,25 @@ namespace UnoNoMercy.Api.Hubs
                     "Eliminated players cannot reconnect.");
             }
 
+            // Remove the previous connection mapping
+            if (!string.IsNullOrWhiteSpace(
+                session.ConnectionId))
+            {
+                _gameManager.PlayerConnections
+                    .Remove(session.ConnectionId);
+            }
+
+            // Add the new connection to the SignalR room
             await Groups.AddToGroupAsync(
                 Context.ConnectionId,
                 game.RoomCode);
 
+            // Associate the new connection with the player
             _gameManager.PlayerConnections[
                 Context.ConnectionId] =
                 player.Name;
 
+            // Update the session with the new connection
             session.ConnectionId =
                 Context.ConnectionId;
 

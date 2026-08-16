@@ -12,6 +12,11 @@ namespace UnoNoMercy.Api.Services
 
         public Dictionary<string, PlayerSession> PlayerSessions { get; }
             = new();
+        public Dictionary<string, string> ActiveSessionConnections { get; }
+            = new();
+
+        public Dictionary<string, string> ActivePlayerConnections { get; }
+            = new();
 
         public bool TryGetSession(
             string sessionToken,
@@ -41,7 +46,5 @@ namespace UnoNoMercy.Api.Services
             }
         }
 
-        public Dictionary<string, string> ActiveSessionConnections { get; }
-            = new();
     }
 }

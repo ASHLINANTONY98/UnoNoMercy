@@ -3,4 +3,5 @@
   <Project Path="UnoNoMercy.ConsoleTest/UnoNoMercy.ConsoleTest.csproj" />
   <Project Path="UnoNoMercy.GameEngine/UnoNoMercy.GameEngine.csproj" />
   <Project Path="UnoNoMercy.SignalRTest2/UnoNoMercy.SignalRTest2.csproj" Id="7adc47f1-8140-4e05-b83d-7a3aa5fbc3cc" />
+  <Project Path="UnoNoMercy.SignalRtest3/UnoNoMercy.SignalRtest3.csproj" Id="23f81b75-71e1-4738-9742-edb396a2b50c" />
 </Solution>

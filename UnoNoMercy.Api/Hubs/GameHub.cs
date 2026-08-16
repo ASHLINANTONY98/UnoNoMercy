@@ -74,10 +74,28 @@ namespace UnoNoMercy.Api.Hubs
                 Context.ConnectionId,
                 game.RoomCode);
 
+            // Check whether this player already has
+            // an active SignalR connection
+            if (_gameManager.ActivePlayerConnections.TryGetValue(
+                player.Name,
+                out var existingConnectionId))
+            {
+                if (existingConnectionId != Context.ConnectionId)
+                {
+                    _gameManager.PlayerConnections
+                        .Remove(existingConnectionId);
+                }
+            }
+
             // Associate connection with player
             _gameManager.PlayerConnections[
                 Context.ConnectionId] =
                 player.Name;
+
+            // Mark this as the player's active connection
+            _gameManager.ActivePlayerConnections[
+                player.Name] =
+                Context.ConnectionId;
 
             Console.WriteLine(
                 $"[SignalR] Sending RoomJoined: {player.Name}");
@@ -230,6 +248,22 @@ namespace UnoNoMercy.Api.Hubs
                     .Remove(session.ConnectionId);
             }
 
+            // Replace the player's previous active connection
+            if (_gameManager.ActivePlayerConnections.TryGetValue(
+                player.Name,
+                out var existingPlayerConnectionId))
+            {
+                if (existingPlayerConnectionId != Context.ConnectionId)
+                {
+                    _gameManager.PlayerConnections
+                        .Remove(existingPlayerConnectionId);
+                }
+            }
+
+            _gameManager.ActivePlayerConnections[
+                player.Name] =
+                Context.ConnectionId;
+
             _gameManager.ActiveSessionConnections[
                 sessionToken] =
                 Context.ConnectionId;
@@ -279,13 +313,25 @@ namespace UnoNoMercy.Api.Hubs
                     sessionToken,
                     out var session))
                 {
-                    // Only clear the active connection if
-                    // this is still the connection used by the session.
+                    // Only clean up if this is still
+                    // the active connection for the session.
                     if (session.ConnectionId ==
                         Context.ConnectionId)
                     {
                         _gameManager.ActiveSessionConnections
                             .Remove(sessionToken);
+
+                        if (_gameManager.ActivePlayerConnections.TryGetValue(
+                            session.PlayerName,
+                            out var activeConnectionId))
+                        {
+                            if (activeConnectionId ==
+                                Context.ConnectionId)
+                            {
+                                _gameManager.ActivePlayerConnections
+                                    .Remove(session.PlayerName);
+                            }
+                        }
                     }
                 }
             }

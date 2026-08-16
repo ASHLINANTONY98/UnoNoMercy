@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 
-Console.WriteLine("=== SIGNALR ROOM TEST ===");
+Console.WriteLine("=== SIGNALR ROOM TEST TWO===");
 Console.WriteLine();
 
-var roomCode = "83GVAJ"; // CHANGE THIS
-var playerName = "Ashlin";
+var roomCode = "2VUDO7"; // CHANGE THIS
+var playerName = "Rahul";
 
 var connection = new HubConnectionBuilder()
     .WithUrl("https://localhost:7285/gamehub")

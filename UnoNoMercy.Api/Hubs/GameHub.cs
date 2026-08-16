@@ -13,9 +13,12 @@ namespace UnoNoMercy.Api.Hubs
         }
 
         public async Task JoinRoom(
-            string roomCode,
-            string playerName)
+    string roomCode,
+    string playerName)
         {
+            Console.WriteLine(
+                $"[SignalR] JoinRoom called: {playerName} / {roomCode}");
+
             if (string.IsNullOrWhiteSpace(roomCode))
             {
                 throw new HubException(
@@ -62,14 +65,20 @@ namespace UnoNoMercy.Api.Hubs
                     "Eliminated players cannot join.");
             }
 
+            // Add connection to SignalR room
             await Groups.AddToGroupAsync(
                 Context.ConnectionId,
                 game.RoomCode);
 
+            // Associate connection with player
             _gameManager.PlayerConnections[
                 Context.ConnectionId] =
                 player.Name;
 
+            Console.WriteLine(
+                $"[SignalR] Sending RoomJoined: {player.Name}");
+
+            // Tell the joining player
             await Clients.Caller.SendAsync(
                 "RoomJoined",
                 new
@@ -77,6 +86,15 @@ namespace UnoNoMercy.Api.Hubs
                     RoomCode = game.RoomCode,
                     PlayerName = player.Name
                 });
+
+            // Tell everyone in the room
+            await Clients.OthersInGroup(game.RoomCode)
+                .SendAsync(
+                    "PlayerJoined",
+                    new
+                    {
+                        PlayerName = player.Name
+                    });
         }
 
         public override async Task OnDisconnectedAsync(

@@ -4,6 +4,9 @@
     {
         private readonly GameManager _gameManager;
 
+        private static readonly TimeSpan SessionExpiration =
+            TimeSpan.FromHours(24);
+
         public PlayerSessionService(
             GameManager gameManager)
         {
@@ -25,6 +28,13 @@
             {
                 throw new UnauthorizedAccessException(
                     "Invalid session token.");
+            }
+
+            if (DateTime.UtcNow - session.LastActivityUtc
+                > SessionExpiration)
+            {
+                throw new UnauthorizedAccessException(
+                    "Session has expired.");
             }
 
             // Update session activity

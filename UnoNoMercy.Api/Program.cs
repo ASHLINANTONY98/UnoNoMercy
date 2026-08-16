@@ -15,6 +15,7 @@ builder.Services.AddSingleton<GameManager>();
 builder.Services.AddSingleton<GameService>();
 builder.Services.AddSingleton<DeckService>();
 builder.Services.AddSingleton<PlayerSessionService>();
+builder.Services.AddHostedService<SessionCleanupService>();
 
 var app = builder.Build();
 

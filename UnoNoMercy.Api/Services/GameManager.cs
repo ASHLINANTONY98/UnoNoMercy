@@ -21,5 +21,24 @@ namespace UnoNoMercy.Api.Services
                 sessionToken,
                 out session!);
         }
+
+        public void RemoveExpiredSessions(
+            TimeSpan expiration)
+        {
+            var now = DateTime.UtcNow;
+
+            var expiredTokens =
+                PlayerSessions
+                    .Where(x =>
+                        now - x.Value.LastActivityUtc
+                        > expiration)
+                    .Select(x => x.Key)
+                    .ToList();
+
+            foreach (var token in expiredTokens)
+            {
+                PlayerSessions.Remove(token);
+            }
+        }
     }
 }

@@ -27,6 +27,10 @@
                     "Invalid session token.");
             }
 
+            // Update session activity
+            session.LastActivityUtc =
+                DateTime.UtcNow;
+
             return session;
         }
     }

@@ -3,7 +3,7 @@
 Console.WriteLine("=== SIGNALR RESUME SESSION TEST ===");
 Console.WriteLine();
 
-var roomCode = "B1MKWY"; // CHANGE THIS
+var roomCode = "ME556J"; // CHANGE THIS
 var playerName = "Ashlin";
 
 try

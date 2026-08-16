@@ -14,6 +14,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<GameManager>();
 builder.Services.AddSingleton<GameService>();
 builder.Services.AddSingleton<DeckService>();
+builder.Services.AddSingleton<PlayerSessionService>();
 
 var app = builder.Build();
 

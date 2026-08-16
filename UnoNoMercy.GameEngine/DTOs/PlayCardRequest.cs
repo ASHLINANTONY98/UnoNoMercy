@@ -2,10 +2,10 @@
 {
     public class PlayCardRequest
     {
-        public Guid GameId { get; set; }
-
-        public string PlayerName { get; set; }
+        public string SessionToken { get; set; }
+            = string.Empty;
 
         public string CardId { get; set; }
+            = string.Empty;
     }
 }

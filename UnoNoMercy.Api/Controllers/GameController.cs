@@ -18,13 +18,20 @@ public class GameController : ControllerBase
     private readonly GameService _gameService;
     private readonly DeckService _deckService;
     private readonly IHubContext<GameHub> _hubContext;
+    private readonly PlayerSessionService _playerSessionService;
 
-    public GameController(GameManager gameManager, GameService gameService, DeckService deckService, IHubContext<GameHub> hubContext)
+    public GameController(
+        GameManager gameManager,
+        GameService gameService,
+        DeckService deckService,
+        IHubContext<GameHub> hubContext,
+        PlayerSessionService playerSessionService)
     {
         _gameManager = gameManager;
         _gameService = gameService;
         _deckService = deckService;
         _hubContext = hubContext;
+        _playerSessionService = playerSessionService;
     }
 
     [HttpPost("create")]
@@ -157,20 +164,45 @@ public class GameController : ControllerBase
 
     [HttpPost("play-card")]
     public async Task<IActionResult> PlayCard(
-        PlayCardRequest request)
+    PlayCardRequest request)
     {
+        PlayerSession session;
+
+        try
+        {
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
         if (!_gameManager.Games.TryGetValue(
-            request.GameId,
+            session.GameId,
             out var game))
         {
             return NotFound(
                 "Game not found.");
         }
 
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
+        }
+
         var result =
             _gameService.PlayPlayerCard(
                 game,
-                request.PlayerName,
+                session.PlayerName,
                 request.CardId);
 
         if (result.Success)
@@ -178,9 +210,9 @@ public class GameController : ControllerBase
             await BroadcastGameState(game);
         }
 
-
         return Ok(result);
     }
+
     [HttpPost("draw-card")]
     public async Task<IActionResult> DrawCard(
         DrawCardRequest request)

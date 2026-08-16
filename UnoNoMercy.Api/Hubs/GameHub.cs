@@ -96,6 +96,10 @@ namespace UnoNoMercy.Api.Hubs
                     LastActivityUtc = DateTime.UtcNow
                 };
 
+            _gameManager.ActiveSessionConnections[
+                sessionToken] =
+                Context.ConnectionId;
+
             // Tell the joining player
             await Clients.Caller.SendAsync(
                 "RoomJoined",
@@ -226,6 +230,10 @@ namespace UnoNoMercy.Api.Hubs
                     .Remove(session.ConnectionId);
             }
 
+            _gameManager.ActiveSessionConnections[
+                sessionToken] =
+                Context.ConnectionId;
+
             // Add the new connection to the SignalR room
             await Groups.AddToGroupAsync(
                 Context.ConnectionId,
@@ -257,6 +265,30 @@ namespace UnoNoMercy.Api.Hubs
         {
             _gameManager.PlayerConnections
                 .Remove(Context.ConnectionId);
+
+            var sessionEntry =
+                _gameManager.ActiveSessionConnections
+                    .FirstOrDefault(x =>
+                        x.Value == Context.ConnectionId);
+
+            if (!string.IsNullOrEmpty(sessionEntry.Key))
+            {
+                var sessionToken = sessionEntry.Key;
+
+                if (_gameManager.PlayerSessions.TryGetValue(
+                    sessionToken,
+                    out var session))
+                {
+                    // Only clear the active connection if
+                    // this is still the connection used by the session.
+                    if (session.ConnectionId ==
+                        Context.ConnectionId)
+                    {
+                        _gameManager.ActiveSessionConnections
+                            .Remove(sessionToken);
+                    }
+                }
+            }
 
             await base.OnDisconnectedAsync(
                 exception);

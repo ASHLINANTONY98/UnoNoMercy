@@ -40,5 +40,8 @@ namespace UnoNoMercy.Api.Services
                 PlayerSessions.Remove(token);
             }
         }
+
+        public Dictionary<string, string> ActiveSessionConnections { get; }
+            = new();
     }
 }

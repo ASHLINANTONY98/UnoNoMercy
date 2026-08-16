@@ -239,20 +239,45 @@ public class GameController : ControllerBase
 
     [HttpPost("draw-card")]
     public async Task<IActionResult> DrawCard(
-        DrawCardRequest request)
+    DrawCardRequest request)
     {
+        PlayerSession session;
+
+        try
+        {
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
         if (!_gameManager.Games.TryGetValue(
-            request.GameId,
+            session.GameId,
             out var game))
         {
             return NotFound(
                 "Game not found.");
         }
 
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
+        }
+
         var result =
             _gameService.DrawPlayerCard(
                 game,
-                request.PlayerName);
+                session.PlayerName);
 
         if (result.Success)
         {
@@ -264,20 +289,45 @@ public class GameController : ControllerBase
 
     [HttpPost("pass-turn")]
     public async Task<IActionResult> PassTurn(
-        PassTurnRequest request)
+    PassTurnRequest request)
     {
+        PlayerSession session;
+
+        try
+        {
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
         if (!_gameManager.Games.TryGetValue(
-            request.GameId,
+            session.GameId,
             out var game))
         {
             return NotFound(
                 "Game not found.");
         }
 
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
+        }
+
         var result =
             _gameService.PassTurn(
                 game,
-                request.PlayerName);
+                session.PlayerName);
 
         if (!result)
         {

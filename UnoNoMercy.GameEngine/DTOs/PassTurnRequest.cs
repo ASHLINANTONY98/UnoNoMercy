@@ -2,8 +2,7 @@
 {
     public class PassTurnRequest
     {
-        public Guid GameId { get; set; }
-
-        public string PlayerName { get; set; }
+        public string SessionToken { get; set; }
+            = string.Empty;
     }
 }

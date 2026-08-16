@@ -120,14 +120,41 @@ public class GameController : ControllerBase
             _gameService.GetGameState(game));
     }
 
-    [HttpPost("next-turn/{gameId}")]
-    public IActionResult NextTurn(Guid gameId)
+    [HttpPost("next-turn")]
+    public IActionResult NextTurn(
+    NextTurnRequest request)
     {
+        PlayerSession session;
+
+        try
+        {
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
         if (!_gameManager.Games.TryGetValue(
-            gameId,
+            session.GameId,
             out var game))
         {
-            return NotFound("Game not found.");
+            return NotFound(
+                "Game not found.");
+        }
+
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
         }
 
         if (!game.HasStarted)
@@ -148,15 +175,41 @@ public class GameController : ControllerBase
             _gameService.GetGameState(game));
     }
 
-    [HttpGet("result/{gameId}")]
-    public IActionResult GetResult(Guid gameId)
+    [HttpPost("result")]
+    public IActionResult GetResult(
+    GetResultRequest request)
     {
+        PlayerSession session;
+
+        try
+        {
+            session =
+                _playerSessionService.GetRequiredSession(
+                    request.SessionToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
         if (!_gameManager.Games.TryGetValue(
-            gameId,
+            session.GameId,
             out var game))
         {
             return NotFound(
                 "Game not found.");
+        }
+
+        if (!game.RoomCode.Equals(
+            session.RoomCode,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(
+                "Session does not belong to this room.");
         }
 
         return Ok(

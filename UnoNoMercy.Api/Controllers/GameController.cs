@@ -429,8 +429,9 @@ public class GameController : ControllerBase
     {
         var gameEntry = _gameManager.Games
             .FirstOrDefault(x =>
-                x.Value.RoomCode ==
-                request.RoomCode);
+                x.Value.RoomCode.Equals(
+                    request.RoomCode,
+                    StringComparison.OrdinalIgnoreCase));
 
         if (gameEntry.Value == null)
         {
@@ -447,7 +448,9 @@ public class GameController : ControllerBase
         }
 
         if (game.Players.Any(x =>
-            x.Name == request.PlayerName))
+            x.Name.Equals(
+            request.PlayerName,
+            StringComparison.OrdinalIgnoreCase)))
         {
             return BadRequest(
                 "Player already exists.");
@@ -463,7 +466,10 @@ public class GameController : ControllerBase
             .Group(game.RoomCode)
             .SendAsync(
                 "PlayerJoined",
-                request.PlayerName);
+                new
+                {
+                    PlayerName = request.PlayerName
+                });
 
 
         return Ok(

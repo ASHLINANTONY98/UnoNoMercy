@@ -441,26 +441,29 @@ public class GameController : ControllerBase
 
         var game = gameEntry.Value;
 
-        if (game.HasStarted)
+        lock (game.SyncRoot)
         {
-            return BadRequest(
-                "Game already started.");
-        }
-
-        if (game.Players.Any(x =>
-            x.Name.Equals(
-            request.PlayerName,
-            StringComparison.OrdinalIgnoreCase)))
-        {
-            return BadRequest(
-                "Player already exists.");
-        }
-
-        game.Players.Add(
-            new Player
+            if (game.HasStarted)
             {
-                Name = request.PlayerName
-            });
+                return BadRequest(
+                    "Game already started.");
+            }
+
+            if (game.Players.Any(x =>
+                x.Name.Equals(
+                    request.PlayerName,
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                return BadRequest(
+                    "Player already exists.");
+            }
+
+            game.Players.Add(
+                new Player
+                {
+                    Name = request.PlayerName
+                });
+        }
 
         await _hubContext.Clients
             .Group(game.RoomCode)

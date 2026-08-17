@@ -22,26 +22,28 @@
                     "Session token is required.");
             }
 
-            if (!_gameManager.TryGetSession(
-                sessionToken,
-                out var session))
+            lock (_gameManager.SyncRoot)
             {
-                throw new UnauthorizedAccessException(
-                    "Invalid session token.");
+                if (!_gameManager.TryGetSession(
+                    sessionToken,
+                    out var session))
+                {
+                    throw new UnauthorizedAccessException(
+                        "Invalid session token.");
+                }
+
+                if (DateTime.UtcNow - session.LastActivityUtc
+                    > SessionExpiration)
+                {
+                    throw new UnauthorizedAccessException(
+                        "Session has expired.");
+                }
+
+                session.LastActivityUtc =
+                    DateTime.UtcNow;
+
+                return session;
             }
-
-            if (DateTime.UtcNow - session.LastActivityUtc
-                > SessionExpiration)
-            {
-                throw new UnauthorizedAccessException(
-                    "Session has expired.");
-            }
-
-            // Update session activity
-            session.LastActivityUtc =
-                DateTime.UtcNow;
-
-            return session;
         }
     }
 }

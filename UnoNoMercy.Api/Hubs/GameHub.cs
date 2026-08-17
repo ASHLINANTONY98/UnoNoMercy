@@ -74,49 +74,46 @@ namespace UnoNoMercy.Api.Hubs
                 Context.ConnectionId,
                 game.RoomCode);
 
-            // Check whether this player already has
-            // an active SignalR connection
-            if (_gameManager.ActivePlayerConnections.TryGetValue(
-                player.Name,
-                out var existingConnectionId))
-            {
-                if (existingConnectionId != Context.ConnectionId)
-                {
-                    _gameManager.PlayerConnections
-                        .Remove(existingConnectionId);
-                }
-            }
-
-            // Associate connection with player
-            _gameManager.PlayerConnections[
-                Context.ConnectionId] =
-                player.Name;
-
-            // Mark this as the player's active connection
-            _gameManager.ActivePlayerConnections[
-                player.Name] =
-                Context.ConnectionId;
-
-            Console.WriteLine(
-                $"[SignalR] Sending RoomJoined: {player.Name}");
-
             var sessionToken =
                 Guid.NewGuid().ToString();
 
-            _gameManager.PlayerSessions[
-                sessionToken] =
-                new PlayerSession
+            lock (_gameManager.SyncRoot)
+            {
+                if (_gameManager.ActivePlayerConnections.TryGetValue(
+                    player.Name,
+                    out var existingConnectionId))
                 {
-                    GameId = gameEntry.Key,
-                    RoomCode = game.RoomCode,
-                    PlayerName = player.Name,
-                    ConnectionId = Context.ConnectionId,
-                    LastActivityUtc = DateTime.UtcNow
-                };
+                    if (existingConnectionId != Context.ConnectionId)
+                    {
+                        _gameManager.PlayerConnections
+                            .Remove(existingConnectionId);
+                    }
+                }
 
-            _gameManager.ActiveSessionConnections[
-                sessionToken] =
-                Context.ConnectionId;
+                _gameManager.PlayerConnections[
+                    Context.ConnectionId] =
+                    player.Name;
+
+                _gameManager.ActivePlayerConnections[
+                    player.Name] =
+                    Context.ConnectionId;
+
+                _gameManager.PlayerSessions[
+                    sessionToken] =
+                    new PlayerSession
+                    {
+                        GameId = gameEntry.Key,
+                        RoomCode = game.RoomCode,
+                        PlayerName = player.Name,
+                        ConnectionId = Context.ConnectionId,
+                        LastActivityUtc = DateTime.UtcNow
+                    };
+
+                _gameManager.ActiveSessionConnections[
+                    sessionToken] =
+                    Context.ConnectionId;
+            }
+
 
             // Tell the joining player
             await Clients.Caller.SendAsync(
@@ -240,50 +237,50 @@ namespace UnoNoMercy.Api.Hubs
                     "Eliminated players cannot reconnect.");
             }
 
-            // Remove the previous connection mapping
-            if (!string.IsNullOrWhiteSpace(
-                session.ConnectionId))
+            lock (_gameManager.SyncRoot)
             {
-                _gameManager.PlayerConnections
-                    .Remove(session.ConnectionId);
-            }
-
-            // Replace the player's previous active connection
-            if (_gameManager.ActivePlayerConnections.TryGetValue(
-                player.Name,
-                out var existingPlayerConnectionId))
-            {
-                if (existingPlayerConnectionId != Context.ConnectionId)
+                if (!string.IsNullOrWhiteSpace(
+                    session.ConnectionId))
                 {
                     _gameManager.PlayerConnections
-                        .Remove(existingPlayerConnectionId);
+                        .Remove(session.ConnectionId);
                 }
+
+                // Replace the player's previous active connection
+                if (_gameManager.ActivePlayerConnections.TryGetValue(
+                    player.Name,
+                    out var existingPlayerConnectionId))
+                {
+                    if (existingPlayerConnectionId != Context.ConnectionId)
+                    {
+                        _gameManager.PlayerConnections
+                            .Remove(existingPlayerConnectionId);
+                    }
+                }
+
+                _gameManager.ActivePlayerConnections[
+                    player.Name] =
+                    Context.ConnectionId;
+
+                _gameManager.ActiveSessionConnections[
+                    sessionToken] =
+                    Context.ConnectionId;
+
+                _gameManager.PlayerConnections[
+                    Context.ConnectionId] =
+                    player.Name;
+
+                session.ConnectionId =
+                    Context.ConnectionId;
+
+                session.LastActivityUtc =
+                    DateTime.UtcNow;
             }
-
-            _gameManager.ActivePlayerConnections[
-                player.Name] =
-                Context.ConnectionId;
-
-            _gameManager.ActiveSessionConnections[
-                sessionToken] =
-                Context.ConnectionId;
 
             // Add the new connection to the SignalR room
             await Groups.AddToGroupAsync(
                 Context.ConnectionId,
                 game.RoomCode);
-
-            // Associate the new connection with the player
-            _gameManager.PlayerConnections[
-                Context.ConnectionId] =
-                player.Name;
-
-            // Update the session with the new connection
-            session.ConnectionId =
-                Context.ConnectionId;
-
-            session.LastActivityUtc =
-                DateTime.UtcNow;
 
             return new
             {
@@ -297,39 +294,42 @@ namespace UnoNoMercy.Api.Hubs
         public override async Task OnDisconnectedAsync(
             Exception? exception)
         {
-            _gameManager.PlayerConnections
-                .Remove(Context.ConnectionId);
-
-            var sessionEntry =
-                _gameManager.ActiveSessionConnections
-                    .FirstOrDefault(x =>
-                        x.Value == Context.ConnectionId);
-
-            if (!string.IsNullOrEmpty(sessionEntry.Key))
+            lock (_gameManager.SyncRoot)
             {
-                var sessionToken = sessionEntry.Key;
+                _gameManager.PlayerConnections
+                    .Remove(Context.ConnectionId);
 
-                if (_gameManager.PlayerSessions.TryGetValue(
-                    sessionToken,
-                    out var session))
+                var sessionEntry =
+                    _gameManager.ActiveSessionConnections
+                        .FirstOrDefault(x =>
+                            x.Value == Context.ConnectionId);
+
+                if (!string.IsNullOrEmpty(sessionEntry.Key))
                 {
-                    // Only clean up if this is still
-                    // the active connection for the session.
-                    if (session.ConnectionId ==
-                        Context.ConnectionId)
-                    {
-                        _gameManager.ActiveSessionConnections
-                            .Remove(sessionToken);
+                    var sessionToken = sessionEntry.Key;
 
-                        if (_gameManager.ActivePlayerConnections.TryGetValue(
-                            session.PlayerName,
-                            out var activeConnectionId))
+                    if (_gameManager.PlayerSessions.TryGetValue(
+                        sessionToken,
+                        out var session))
+                    {
+                        // Only clean up if this is still
+                        // the active connection for the session.
+                        if (session.ConnectionId ==
+                            Context.ConnectionId)
                         {
-                            if (activeConnectionId ==
-                                Context.ConnectionId)
+                            _gameManager.ActiveSessionConnections
+                                .Remove(sessionToken);
+
+                            if (_gameManager.ActivePlayerConnections.TryGetValue(
+                                session.PlayerName,
+                                out var activeConnectionId))
                             {
-                                _gameManager.ActivePlayerConnections
-                                    .Remove(session.PlayerName);
+                                if (activeConnectionId ==
+                                    Context.ConnectionId)
+                                {
+                                    _gameManager.ActivePlayerConnections
+                                        .Remove(session.PlayerName);
+                                }
                             }
                         }
                     }

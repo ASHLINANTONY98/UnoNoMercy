@@ -18,6 +18,8 @@ namespace UnoNoMercy.Api.Services
         public Dictionary<string, string> ActivePlayerConnections { get; }
             = new();
 
+        public object SyncRoot { get; } = new();
+
         public bool TryGetSession(
             string sessionToken,
             out PlayerSession session)
@@ -30,19 +32,58 @@ namespace UnoNoMercy.Api.Services
         public void RemoveExpiredSessions(
             TimeSpan expiration)
         {
-            var now = DateTime.UtcNow;
-
-            var expiredTokens =
-                PlayerSessions
-                    .Where(x =>
-                        now - x.Value.LastActivityUtc
-                        > expiration)
-                    .Select(x => x.Key)
-                    .ToList();
-
-            foreach (var token in expiredTokens)
+            lock (SyncRoot)
             {
-                PlayerSessions.Remove(token);
+                var now = DateTime.UtcNow;
+
+                var expiredTokens =
+                    PlayerSessions
+                        .Where(x =>
+                            now - x.Value.LastActivityUtc
+                            > expiration)
+                        .Select(x => x.Key)
+                        .ToList();
+
+                foreach (var token in expiredTokens)
+                {
+                    if (PlayerSessions.TryGetValue(
+                        token,
+                        out var session))
+                    {
+                        if (ActiveSessionConnections.TryGetValue(
+                            token,
+                            out var connectionId))
+                        {
+                            ActiveSessionConnections.Remove(token);
+
+                            if (PlayerConnections.TryGetValue(
+                                connectionId,
+                                out var playerName))
+                            {
+                                if (playerName ==
+                                    session.PlayerName)
+                                {
+                                    PlayerConnections.Remove(
+                                        connectionId);
+                                }
+                            }
+                        }
+
+                        if (ActivePlayerConnections.TryGetValue(
+                            session.PlayerName,
+                            out var activeConnectionId))
+                        {
+                            if (session.ConnectionId ==
+                                activeConnectionId)
+                            {
+                                ActivePlayerConnections.Remove(
+                                    session.PlayerName);
+                            }
+                        }
+
+                        PlayerSessions.Remove(token);
+                    }
+                }
             }
         }
 

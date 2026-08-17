@@ -177,73 +177,86 @@ namespace UnoNoMercy.GameEngine.Services
 
         public bool TakeTurn(Game game)
         {
-            if (IsLastPlayerStanding(game))
+            lock (game.SyncRoot)
             {
-                var winner = game.Players
-                    .First(p => !p.IsEliminated);
-
-                return EndGame(
-                    game,
-                    winner.Name);
-            }
-
-            game.TotalTurns++;
-
-            var player = GetCurrentPlayer(game);
-
-            // NO MERCY STACKING CHECK
-            if (game.PendingDrawCount > 0)
-            {
-                var stackCard = player.Hand
-                    .Where(c =>
-                        GetDrawValue(c) >=
-                        game.CurrentStackValue)
-                    .OrderByDescending(c =>
-                        GetDrawValue(c))
-                    .FirstOrDefault();
-
-                if (stackCard != null)
+                if (IsLastPlayerStanding(game))
                 {
-                    PlayCard(
+                    var winner = game.Players
+                        .First(p => !p.IsEliminated);
+
+                    return EndGame(
                         game,
-                        player,
-                        stackCard);
+                        winner.Name);
+                }
 
-                    bool playedLastCard =
-                        player.Hand.Count == 0;
+                game.TotalTurns++;
 
-                    Console.WriteLine(
-                        $"{player.Name} stacked {stackCard}");
+                var player = GetCurrentPlayer(game);
 
-                    ProcessSpecialCard(
-                        game,
-                        player,
-                        stackCard,
-                        null);
+                // NO MERCY STACKING CHECK
+                if (game.PendingDrawCount > 0)
+                {
+                    var stackCard = player.Hand
+                        .Where(c =>
+                            GetDrawValue(c) >=
+                            game.CurrentStackValue)
+                        .OrderByDescending(c =>
+                            GetDrawValue(c))
+                        .FirstOrDefault();
 
-                    if (playedLastCard && game.PendingDrawCount == 0)
+                    if (stackCard != null)
                     {
-                        return EndGame(
+                        PlayCard(
                             game,
-                            player.Name);
+                            player,
+                            stackCard);
+
+                        bool playedLastCard =
+                            player.Hand.Count == 0;
+
+                        Console.WriteLine(
+                            $"{player.Name} stacked {stackCard}");
+
+                        ProcessSpecialCard(
+                            game,
+                            player,
+                            stackCard,
+                            null);
+
+                        if (playedLastCard && game.PendingDrawCount == 0)
+                        {
+                            return EndGame(
+                                game,
+                                player.Name);
+                        }
+
+                        NextTurn(game);
+
+                        return true;
                     }
 
-                    NextTurn(game);
+                    for (int i = 0; i < game.PendingDrawCount; i++)
+                    {
+                        player.Hand.Add(
+                            DrawCard(game));
+                    }
 
-                    return true;
-                }
+                    CheckMercyRule(game, player);
 
-                for (int i = 0; i < game.PendingDrawCount; i++)
-                {
-                    player.Hand.Add(
-                        DrawCard(game));
-                }
+                    if (player.IsEliminated)
+                    {
 
-                CheckMercyRule(game, player);
+                        game.PendingDrawCount = 0;
+                        game.CurrentStackValue = 0;
 
-                if (player.IsEliminated)
-                {
-                    
+                        NextTurn(game);
+
+                        return true;
+                    }
+
+                    Console.WriteLine(
+                        $"💀 {player.Name} draws {game.PendingDrawCount} cards!");
+
                     game.PendingDrawCount = 0;
                     game.CurrentStackValue = 0;
 
@@ -252,67 +265,57 @@ namespace UnoNoMercy.GameEngine.Services
                     return true;
                 }
 
-                Console.WriteLine(
-                    $"💀 {player.Name} draws {game.PendingDrawCount} cards!");
+                var topCard = GetTopCard(game);
 
-                game.PendingDrawCount = 0;
-                game.CurrentStackValue = 0;
+                var playableCard =
+                    GetFirstPlayableCard(
+                        game,
+                        player,
+                        topCard);
+
+                if (playableCard != null)
+                {
+                    PlayCard(
+                        game,
+                        player,
+                        playableCard);
+
+                    bool playedLastCard =
+                        player.Hand.Count == 0;
+
+                    Console.WriteLine(
+                        $"{player.Name} played {playableCard}");
+
+                    ProcessSpecialCard(
+                        game,
+                        player,
+                        playableCard,
+                        null);
+
+                    if (playedLastCard && game.PendingDrawCount == 0)
+                    {
+                        return EndGame(
+                            game,
+                            player.Name);
+                    }
+                }
+                else
+                {
+                    var drawnCard = DrawCard(game);
+
+                    player.Hand.Add(drawnCard);
+
+                    CheckMercyRule(game, player);
+
+                    Console.WriteLine(
+                        $"{player.Name} drew {drawnCard}");
+                }
+
 
                 NextTurn(game);
 
                 return true;
             }
-
-            var topCard = GetTopCard(game);
-
-            var playableCard =
-                GetFirstPlayableCard(
-                    game,
-                    player,
-                    topCard);
-
-            if (playableCard != null)
-            {
-                PlayCard(
-                    game,
-                    player,
-                    playableCard);
-
-                bool playedLastCard =
-                    player.Hand.Count == 0;
-
-                Console.WriteLine(
-                    $"{player.Name} played {playableCard}");
-
-                ProcessSpecialCard(
-                    game,
-                    player,
-                    playableCard,
-                    null);
-
-                if (playedLastCard && game.PendingDrawCount == 0)
-                {
-                    return EndGame(
-                        game,
-                        player.Name);
-                }
-            }
-            else
-            {
-                var drawnCard = DrawCard(game);
-
-                player.Hand.Add(drawnCard);
-
-                CheckMercyRule(game, player);
-
-                Console.WriteLine(
-                    $"{player.Name} drew {drawnCard}");
-            }
-
-
-            NextTurn(game);
-
-            return true;
         }
 
         private bool EndGame(

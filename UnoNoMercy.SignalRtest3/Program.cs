@@ -3,8 +3,8 @@
 Console.WriteLine("=== SIGNALR DUPLICATE CONNECTION TEST THREE ===");
 Console.WriteLine();
 
-var roomCode = "FGTDLM";
-var playerName = "Arun";
+var roomCode = "3MUIA3";
+var playerName = "Ashlin";
 
 try
 {

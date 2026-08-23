@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../room/create_room_screen.dart';
+
 class LobbyScreen extends StatelessWidget {
   const LobbyScreen({super.key});
 
@@ -20,7 +22,14 @@ class LobbyScreen extends StatelessWidget {
               width: 220,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateRoomScreen(),
+                    ),
+                  );
+                },
                 child: const Text('CREATE ROOM'),
               ),
             ),

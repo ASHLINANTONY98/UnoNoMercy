@@ -38,10 +38,10 @@ public class GameController : ControllerBase
     public IActionResult CreateGame(
     CreateGameRequest request)
     {
-        if (request.Players.Count < 2)
+        if (string.IsNullOrWhiteSpace(request.PlayerName))
         {
             return BadRequest(
-                "At least 2 players are required.");
+                "Player name is required.");
         }
 
         var deck = _deckService.CreateDeck();
@@ -53,14 +53,11 @@ public class GameController : ControllerBase
             Deck = deck
         };
 
-        foreach (var playerName in request.Players)
-        {
-            game.Players.Add(
-                new Player
-                {
-                    Name = playerName
-                });
-        }
+        game.Players.Add(
+            new Player
+            {
+                Name = request.PlayerName.Trim()
+            });
 
         var gameId = Guid.NewGuid();
 
@@ -76,7 +73,6 @@ public class GameController : ControllerBase
                 RoomCode = game.RoomCode,
                 State = _gameService.GetGameState(game)
             });
-
     }
 
     [HttpPost("state")]

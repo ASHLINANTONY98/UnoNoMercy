@@ -2,7 +2,7 @@
 {
     public class CreateGameRequest
     {
-        public List<string> Players { get; set; }
-            = new();
+        public string PlayerName { get; set; }
+            = string.Empty;
     }
 }

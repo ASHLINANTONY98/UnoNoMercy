@@ -4,7 +4,7 @@ Console.WriteLine(
     "=== SIGNALR RESUME SESSION TEST ===");
 
 var roomCode = "FGTDLM";
-var playerName = "Arun";
+var playerName = "Ashlin";
 
 string? sessionToken =
     "c3682336-3f74-4f77-b3c7-e91a2440e237";

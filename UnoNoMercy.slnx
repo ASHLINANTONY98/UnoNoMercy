@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="UnoNoMercy.Api.Tests/UnoNoMercy.Api.Tests.csproj" Id="0412dc6b-d71d-4e79-86c5-b41ac821b3d0" />
   <Project Path="UnoNoMercy.Api/UnoNoMercy.Api.csproj" />
   <Project Path="UnoNoMercy.ConcurrencyTest/UnoNoMercy.ConcurrencyTest.csproj" Id="f59b9f9d-0870-4d24-8356-86dd6381446b" />
   <Project Path="UnoNoMercy.ConsoleTest/UnoNoMercy.ConsoleTest.csproj" />

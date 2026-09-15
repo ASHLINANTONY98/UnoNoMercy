@@ -54,7 +54,7 @@ public class GameCreationTests
                 "/api/Game/create",
                 new
                 {
-                    playerName = ""
+                    playerName = "" 
                 });
 
         response.StatusCode

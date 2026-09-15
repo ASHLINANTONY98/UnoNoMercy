@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using UnoNoMercy.Api.Tests.Helpers;
 using UnoNoMercy.Api.Tests.Infrastructure;
-
+ 
 namespace UnoNoMercy.Api.Tests;
 
 public class JoinGameTests

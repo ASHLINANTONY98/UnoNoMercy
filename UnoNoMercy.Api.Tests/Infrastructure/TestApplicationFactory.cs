@@ -4,5 +4,5 @@ namespace UnoNoMercy.Api.Tests.Infrastructure;
 
 public class TestApplicationFactory
     : WebApplicationFactory<Program>
-{
+{ 
 }

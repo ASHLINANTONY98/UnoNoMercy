@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace UnoNoMercy.Api.Tests.Helpers;
 
-public static class GameTestHelper
+public static class GameTestHelper 
 {
     public static async Task<string> CreateRoomAsync(
         HttpClient client,
